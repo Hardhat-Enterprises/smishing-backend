@@ -6,6 +6,12 @@ const authRoute = require('./routes/auth.route.js')
 const app = express()
 app.use(express.json())
 
+
+
+const checkRoute = require('./routes/check.route');
+app.use('/api', checkRoute);
+
+
 // Connect to MongoDB
 connectDB()
 
