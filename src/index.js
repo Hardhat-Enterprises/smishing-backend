@@ -1,7 +1,6 @@
 require('dotenv').config()
 const express = require('express')
 const helmet = require('helmet')
-const cors = require('cors')
 const rateLimit = require('express-rate-limit')
 const connectDB = require('./configs/db.config.js')
 const authRoute = require('./routes/auth.route.js')
