@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const User = require('../models/User')
-const Otp = require('../models/Otp')
+const User = require('../models/user')
+const Otp = require('../models/otp')
 const sendEmail = require('../utils/sendEmail')
 
 // In controllers/authController.js
@@ -96,23 +96,19 @@ exports.login = async (req, res) => {
     try {
         const user = await User.findOne({ email })
         if (!user)
-            return res
-                .status(401)
-                .json({
-                    success: false,
-                    message: 'Invalid credentials',
-                    token: null,
-                })
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials',
+                token: null,
+            })
 
         const isMatch = await bcrypt.compare(password, user.passwordHash)
         if (!isMatch)
-            return res
-                .status(401)
-                .json({
-                    success: false,
-                    message: 'Invalid credentials',
-                    token: null,
-                })
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials',
+                token: null,
+            })
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
             expiresIn: '1h',

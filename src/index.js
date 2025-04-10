@@ -28,9 +28,8 @@ const limiter = rateLimit({
 
 app.use('/api', authRoutes)
 
-const PORT = 3000
+const PORT = process.env.PORT || 3000
 
-// Correct the listening address to '0.0.0.0' as a string.
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`)
 })
