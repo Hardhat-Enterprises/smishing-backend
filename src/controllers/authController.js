@@ -10,15 +10,27 @@ exports.register = async (req, res) => {
 
     console.log('Register request data:', req.body)
 
+    // Email validation regex (basic check for valid email format)
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
+    if (!emailRegex.test(email)) {
+        return res
+            .status(400)
+            .json({ success: false, message: 'Invalid email format.' })
+    }
+
     try {
+        // Check if email already exists
         const existingUser = await User.findOne({ email })
-        if (existingUser)
+        if (existingUser) {
             return res
                 .status(409)
                 .json({ success: false, message: 'Email already registered.' })
+        }
 
-        // Hash the user's password and store in the database
+        // Hash the user's password
         const hashedPassword = await bcrypt.hash(password, 10)
+
+        // Create the user in the database but without the OTP-related logic yet
         const user = await User.create({
             fullName,
             phoneNumber,
@@ -31,10 +43,25 @@ exports.register = async (req, res) => {
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // OTP valid for 10 minutes
 
         // Save OTP in database
-        await Otp.create({ userId: user._id, otpCode, expiresAt })
+        const otp = await Otp.create({ userId: user._id, otpCode, expiresAt })
 
         // Send OTP to the user's email
-        await sendEmail(email, `Your verification OTP is: ${otpCode}`)
+        try {
+            await sendEmail(email, `Your verification OTP is: ${otpCode}`)
+        } catch (emailError) {
+            // If email sending fails, delete the user and OTP from the database
+            await User.deleteOne({ _id: user._id })
+            await Otp.deleteOne({ _id: otp._id })
+
+            console.error('Error sending email:', emailError)
+            return res
+                .status(500)
+                .json({
+                    success: false,
+                    message:
+                        'Failed to send verification email. Please try again later.',
+                })
+        }
 
         // Respond with success
         res.json({
@@ -42,8 +69,11 @@ exports.register = async (req, res) => {
             message: 'Registration successful. Please verify your email.',
         })
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ success: false, message: 'Server error' })
+        console.error('Server error:', err)
+        res.status(500).json({
+            success: false,
+            message: 'Server error. Please try again later.',
+        })
     }
 }
 
