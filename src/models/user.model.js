@@ -20,11 +20,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        // TO-DO: Add OTP
-        /* isEmailVerified: {
-      type: Boolean,
-      default: false,
-    }, */
+        isEmailVerified: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 )
