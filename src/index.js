@@ -1,35 +1,20 @@
+require('dotenv').config()
 const express = require('express')
-const dotenv = require('dotenv')
-const connectDB = require('./configs/db')
-const authRoutes = require('./routes/authRoutes')
-const rateLimit = require('express-rate-limit')
-const cors = require('cors')
-
-dotenv.config()
-connectDB()
+const connectDB = require('./configs/db.config.js')
+const authRoute = require('./routes/auth.route.js')
 
 const app = express()
-
-// Replace your current cors configuration with this
-
-app.use((req, res, next) => {
-    console.log('Incoming request:', req.method, req.originalUrl)
-    console.log('Request headers:', req.headers)
-    next()
-})
-
 app.use(express.json())
 
-const limiter = rateLimit({
-    windowMs: 10 * 60 * 1000,
-    max: 100,
-})
-//app.use(limiter);
+// Connect to MongoDB
+connectDB()
 
-app.use('/api', authRoutes)
+// Mount auth routes at /api/auth
+app.use('/api/auth', authRoute)
 
 const PORT = process.env.PORT || 3000
-
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
+
+module.exports = app
