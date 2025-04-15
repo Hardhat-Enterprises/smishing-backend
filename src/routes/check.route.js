@@ -1,20 +1,30 @@
 const express = require('express');
+const { spawn } = require('child_process');
 const router = express.Router();
 
-// POST /check-message
 router.post('/check-message', async (req, res) => {
   const { message } = req.body;
 
-  // Step 1: Validate input
   if (!message || typeof message !== 'string' || message.trim() === '') {
     return res.status(400).json({ error: 'Message is required and must be a non-empty string.' });
   }
 
-  // Step 2: Placeholder for preprocessing + ML prediction
+  const python = spawn('python', ['ml/predict.py', message]);
 
-  return res.status(200).json({
-    result: 'Prediction will go here in next step.',
-    message: message,
+  let result = '';
+  python.stdout.on('data', (data) => {
+    result += data.toString();
+  });
+
+  python.stderr.on('data', (data) => {
+    console.error(`Python error: ${data}`);
+  });
+
+  python.on('close', (code) => {
+    res.status(200).json({
+      prediction: result.trim(),
+      message,
+    });
   });
 });
 
