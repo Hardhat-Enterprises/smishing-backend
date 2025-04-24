@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "nodemon src/index.js",
         "format": "prettier --write .",
-        "test": "echo \"Error: No test specified\" && exit 1",
+        "test": "vitest",
         "prepare": "husky"
     },
     "dependencies": {
@@ -20,7 +20,9 @@
         "husky": "^9.1.7",
         "lint-staged": "^15.5.0",
         "nodemon": "^3.1.9",
-        "prettier": "^3.5.3"
+        "prettier": "^3.5.3",
+        "supertest": "^7.1.0",
+        "vitest": "^3.1.2"
     },
     "lint-staged": {
         "*.{js,md}": "prettier --write"

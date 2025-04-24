@@ -54,7 +54,7 @@ export const signup = async (req, res) => {
             expiresAt,
         });
 
-        await sendEmail(email, `Your verification OTP is: ${otpCode}. It will expire in 10 minutes.`);
+        //await sendEmail(email, `Your verification OTP is: ${otpCode}. It will expire in 10 minutes.`);
 
         return res.status(201).json({
             success: true,
