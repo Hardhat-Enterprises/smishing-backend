@@ -54,19 +54,21 @@ export const signup = async (req, res) => {
             expiresAt,
         });
 
-        await sendEmail(email, `Your verification OTP is: ${otpCode}. It will expire in 10 minutes.`);
+        console.log(`🧪 [MOCK OTP] ${otpCode} sent to ${email}`);
+
 
         return res.status(201).json({
             success: true,
             message: "User registered successfully. Please verify your email.",
         });
     } catch (error) {
-        console.error("Error in signup:", error);
+        console.error("🔥🔥 Error in signup:", error);
         return res.status(500).json({
             success: false,
-            message: "Internal server error.",
+            message: error.message,  // ✅ This shows the exact error
         });
     }
+    
 };
 
 /**
@@ -190,6 +192,35 @@ export const login = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error.",
+        });
+    }
+};
+/**
+ * GET /api/auth/me
+ * Requires JWT token
+ */
+export const getCurrentUser = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        const user = await User.findById(userId).select("fullName email isEmailVerified consentGiven");
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user,
+        });
+    } catch (error) {
+        console.error("Error fetching current user:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
         });
     }
 };

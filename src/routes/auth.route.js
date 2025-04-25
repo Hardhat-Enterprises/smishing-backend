@@ -1,15 +1,14 @@
 import express from "express";
-import { signup, verifyOtp, login } from "../controllers/auth.controller.js";
+import { signup, login, verifyOtp, getCurrentUser } from "../controllers/auth.controller.js";
+import authenticate from "../middleware/authenticate.js"; 
 
 const router = express.Router();
 
-// POST /signup
 router.post("/signup", signup);
-
-// POST /verify-otp
 router.post("/verify-otp", verifyOtp);
-
-// POST /login
 router.post("/login", login);
 
+router.get("/me", authenticate, getCurrentUser);
+
 export default router;
+console.log("auth.route.js mounted");
