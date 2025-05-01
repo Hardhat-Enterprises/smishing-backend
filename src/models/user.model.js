@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
         phoneNumber: {
             type: String,
             required: true,
+            unique: true, // ensure one account per number
         },
         email: {
             type: String,
@@ -20,11 +21,18 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        // TO-DO: Add OTP
-        /* isEmailVerified: {
-      type: Boolean,
-      default: false,
-    }, */
+
+        // OTP verification fields
+        isPhoneVerified: {
+            type: Boolean,
+            default: false,
+        },
+        phoneVerificationCode: {
+            type: String, // store the hashed OTP
+        },
+        phoneVerificationExpires: {
+            type: Date, // timestamp when the OTP expires
+        },
     },
     { timestamps: true }
 )
