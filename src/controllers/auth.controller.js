@@ -26,7 +26,6 @@ export const signup = async (req, res) => {
             });
         }
 
-        // Basic email validation regex
         const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!emailRegex.test(email)) {
             return res.status(422).json({
@@ -44,9 +43,15 @@ export const signup = async (req, res) => {
             isEmailVerified: false,
         });
 
-        // Generate OTP and hash
-        const otpCode = await generateOtp(user._id, "signup");
-        await sendEmail(email, `Your verification OTP is: ${otpCode}. It will expire in 10 minutes.`);
+        try {
+            const otpCode = await generateOtp(user._id, "signup");
+            await sendEmail(email, `Your verification OTP is: ${otpCode}. It will expire in 10 minutes.`);
+        } catch (otpError) {
+            return res.status(400).json({
+                success: false,
+                message: otpError.message,
+            });
+        }
 
         return res.status(201).json({
             success: true,
@@ -62,7 +67,7 @@ export const signup = async (req, res) => {
 };
 
 /**
- * POST /api/auth/verifyemail
+ * POST /api/auth/verify-email
  */
 export const verifyemail = async (req, res) => {
     try {
@@ -74,6 +79,7 @@ export const verifyemail = async (req, res) => {
                 message: "Email and OTP required.",
             });
         }
+
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({
@@ -81,21 +87,24 @@ export const verifyemail = async (req, res) => {
                 message: "User not found.",
             });
         }
-        const isValid = await verifyOtp(user._id, "signup", otp);
 
-        if (isValid) {
-            user.isEmailVerified = true;
-            await user.save();
+        const result = await verifyOtp(user._id, "signup", otp);
 
-            return res.json({
-                success: true,
-                message: "Email verified successfully.",
+        if (!result.success) {
+            return res.status(400).json({
+                success: false,
+                message: result.message || "Invalid OTP.",
+                lockoutUntil: result.lockoutUntil,
+                attemptsLeft: result.attemptsLeft,
             });
         }
 
-        return res.status(400).json({
-            success: false,
-            message: "Invalid OTP.",
+        user.isEmailVerified = true;
+        await user.save();
+
+        return res.json({
+            success: true,
+            message: "Email verified successfully.",
         });
     } catch (error) {
         console.error(error);
@@ -120,7 +129,6 @@ export const login = async (req, res) => {
             });
         }
 
-        // Basic email validation regex
         const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!emailRegex.test(email)) {
             return res.status(422).json({
@@ -130,18 +138,20 @@ export const login = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
-        if (!user)
+        if (!user) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid email.",
             });
+        }
 
         const isMatch = await comparePassword(password, user.passwordHash);
-        if (!isMatch)
+        if (!isMatch) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials.",
             });
+        }
 
         if (!user.isEmailVerified) {
             return res.status(403).json({
@@ -166,7 +176,7 @@ export const login = async (req, res) => {
 };
 
 /**
- * POST /api/auth/forgotpassword
+ * POST /api/auth/forgot-password
  */
 export const forgotpassword = async (req, res) => {
     try {
@@ -186,9 +196,16 @@ export const forgotpassword = async (req, res) => {
                 message: "User not found",
             });
         }
-        const otpCode = await generateOtp(user._id, "resetpassword");
 
-        await sendEmail(email, `Your OTP to reset your password is: ${otpCode}. It will expire in 10 minutes.`);
+        try {
+            const otpCode = await generateOtp(user._id, "resetpassword");
+            await sendEmail(email, `Your OTP to reset your password is: ${otpCode}. It will expire in 10 minutes.`);
+        } catch (otpError) {
+            return res.status(400).json({
+                success: false,
+                message: otpError.message,
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -201,8 +218,9 @@ export const forgotpassword = async (req, res) => {
         });
     }
 };
+
 /**
- * POST /api/auth/resetpassword
+ * POST /api/auth/reset-password
  */
 export const resetpassword = async (req, res) => {
     try {
@@ -211,7 +229,7 @@ export const resetpassword = async (req, res) => {
         if (!email || !newPassword || !otp) {
             return res.status(400).json({
                 success: false,
-                message: "Email and new password, and OTP are required",
+                message: "Email, new password, and OTP are required",
             });
         }
 
@@ -223,12 +241,14 @@ export const resetpassword = async (req, res) => {
             });
         }
 
-        const isValidOtp = await verifyOtp(user._id, "resetpassword", otp);
+        const result = await verifyOtp(user._id, "resetpassword", otp);
 
-        if (!isValidOtp) {
+        if (!result.success) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid or expired OTP.",
+                message: result.message || "Invalid or expired OTP.",
+                lockoutUntil: result.lockoutUntil,
+                attemptsLeft: result.attemptsLeft,
             });
         }
 

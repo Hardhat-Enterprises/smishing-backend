@@ -24,6 +24,7 @@ const otpSchema = new mongoose.Schema(
         expiresAt: {
             type: Date,
             required: true,
+            index: { expires: "0s" },
         },
         isUsed: {
             type: Boolean,
@@ -33,9 +34,15 @@ const otpSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        lockoutUntil: {
+            type: Date,
+            default: null,
+        },
     },
     { timestamps: true },
 );
+
+otpSchema.index({ userId: 1, purpose: 1, isUsed: 1, expiresAt: 1 });
 
 const Otp = mongoose.model("Otp", otpSchema);
 export default Otp;

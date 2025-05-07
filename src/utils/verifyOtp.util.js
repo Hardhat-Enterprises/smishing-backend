@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
 import Otp from "../models/otp.model.js";
 
-const MAX_FAILED_ATTEMPTS = 5;
-const LOCKOUT_TIME = 10 * 60 * 1000;
+const MAX_FAILED_ATTEMPTS = process.env.OTP_LIMIT || 5;
+const LOCKOUT_TIME = process.env.LOCKOUT_TIME || 10 * 60 * 1000;
 
 export const verifyOtp = async (userId, purpose, enteredOtp) => {
     try {
@@ -16,36 +16,56 @@ export const verifyOtp = async (userId, purpose, enteredOtp) => {
         if (!otpRecord) {
             throw new Error("No valid OTP found or it has expired.");
         }
+
         if (otpRecord.failedAttempts >= MAX_FAILED_ATTEMPTS) {
-            const lockoutTimeRemaining = LOCKOUT_TIME - (new Date() - otpRecord.createdAt);
+            const lockoutTimeRemaining = otpRecord.lockoutUntil ? otpRecord.lockoutUntil - new Date() : 0;
             if (lockoutTimeRemaining > 0) {
-                throw new Error(
-                    `Too many failed attempts. Please try again after ${Math.floor(lockoutTimeRemaining / 1000)} seconds.`,
-                );
+                return {
+                    success: false,
+                    lockoutUntil: otpRecord.lockoutUntil,
+                    attemptsLeft: 0,
+                    message: "Account locked. Try again later.",
+                };
             }
         }
+
         const isMatch = await bcrypt.compare(enteredOtp, otpRecord.otpHash);
         if (!isMatch) {
             otpRecord.failedAttempts += 1;
-            await otpRecord.save();
 
             if (otpRecord.failedAttempts >= MAX_FAILED_ATTEMPTS) {
-                throw new Error("Too many failed attempts. You are now locked out for 10 minutes.");
+                otpRecord.lockoutUntil = new Date(Date.now() + LOCKOUT_TIME);
+                await otpRecord.save();
+                return {
+                    success: false,
+                    lockoutUntil: otpRecord.lockoutUntil,
+                    attemptsLeft: 0,
+                    message: "Too many failed attempts. Account locked.",
+                };
             }
-            throw new Error("Invalid OTP.");
+
+            await otpRecord.save();
+            return {
+                success: false,
+                lockoutUntil: null,
+                attemptsLeft: MAX_FAILED_ATTEMPTS - otpRecord.failedAttempts,
+                message: "Incorrect OTP. Try again.",
+            };
         }
+
         otpRecord.isUsed = true;
         otpRecord.failedAttempts = 0;
+        otpRecord.lockoutUntil = null;
         await otpRecord.save();
-        return true;
+
+        return {
+            success: true,
+            lockoutUntil: null,
+            attemptsLeft: MAX_FAILED_ATTEMPTS,
+            message: "OTP verified successfully.",
+        };
     } catch (error) {
         console.error("Error while verifying OTP:", error);
-        if (error.message === "No valid OTP found or it has expired.") {
-            throw new Error("The OTP is either invalid or has expired. Please request a new one.");
-        } else if (error.message === "Invalid OTP.") {
-            throw new Error("The OTP you entered is incorrect. Please try again.");
-        } else {
-            throw new Error("An error occurred while verifying the OTP. Please try again.");
-        }
+        throw new Error(error.message || "An error occurred while verifying the OTP.");
     }
 };

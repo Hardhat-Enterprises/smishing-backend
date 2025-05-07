@@ -6,16 +6,16 @@ const router = express.Router();
 // POST /signup
 router.post("/signup", signup);
 
-// POST /verifyemail
-router.post("/verifyemail", verifyemail);
+// POST /verify-email
+router.post("/verify-email", verifyemail);
 
 // POST /login
 router.post("/login", login);
 
-//POST /forgotpassword
-router.post("/forgotpassword", forgotpassword);
+// POST /forgot-password
+router.post("/forgot-password", forgotpassword);
 
-//POST /resetpassword
-router.post("/resetpassword", resetpassword);
+// POST /reset-password
+router.post("/reset-password", resetpassword);
 
 export default router;
