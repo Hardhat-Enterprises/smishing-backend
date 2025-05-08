@@ -2,42 +2,54 @@ import bcrypt from "bcrypt";
 import Otp from "../models/otp.model.js";
 import mongoose from "mongoose";
 
-const OTP_EXPIRY_MINUTES = process.env.OTP_EXPIRY_MINUTES || 10;
-const OTP_LENGTH = 6;
-const OTP_LIMIT = process.env.OTP_LIMIT || 5;
-const LOCKOUT_TIME = process.env.LOCKOUT_TIME || 10 * 60 * 1000;
+const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES, 10) || 10;
+const OTP_LENGTH = parseInt(process.env.OTP_LENGTH, 10) || 6;
+const OTP_LIMIT = parseInt(process.env.OTP_LIMIT, 10) || 5;
+const OTP_LOCKOUT_TIME = parseInt(process.env.OTP_LOCKOUT_TIME, 10) || 10 * 60 * 1000;
 
+/**
+ * Generates a random numeric OTP of length OTP_LENGTH.
+ */
 const generateRandomOtp = () => {
     return Math.floor(10 ** (OTP_LENGTH - 1) + Math.random() * (10 ** OTP_LENGTH - 1)).toString();
 };
 
+/**
+ * Creates and stores a new OTP for the given user and purpose,
+ * enforcing rate limits and one-active-OTP semantics.
+ *
+ * @param {ObjectId} userId
+ * @param {"signup"|"resetpassword"} purpose
+ * @returns {Promise<string>} plaintext OTP
+ */
 export const generateOtp = async (userId, purpose) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const recentOtpRequests = await Otp.countDocuments({
+        // Enforce rate limit
+        const windowStart = new Date(Date.now() - OTP_EXPIRY_MINUTES * 60 * 1000);
+        const recentCount = await Otp.countDocuments({
             userId,
             purpose,
-            createdAt: { $gt: new Date(Date.now() - 10 * 60 * 1000) },
             isUsed: false,
+            createdAt: { $gt: windowStart },
         }).session(session);
 
-        if (recentOtpRequests >= OTP_LIMIT) {
-            throw new Error(`You have exceeded the OTP request limit of ${OTP_LIMIT} per 10 minutes.`);
+        if (recentCount >= OTP_LIMIT) {
+            throw new Error(`Exceeded ${OTP_LIMIT} OTP requests in last ${OTP_EXPIRY_MINUTES} minutes.`);
         }
 
+        // Remove any existing unused OTPs for this user + purpose
+        await Otp.deleteMany({ userId, purpose, isUsed: false }).session(session);
+
+        // Generate & hash new OTP
         const plainOtp = generateRandomOtp();
         const otpHash = await bcrypt.hash(plainOtp, 10);
         const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-        const otpRecord = new Otp({
-            userId,
-            otpHash,
-            purpose,
-            expiresAt,
-        });
-
+        const otpRecord = new Otp({ userId, otpHash, purpose, expiresAt });
         await otpRecord.save({ session });
+
         await session.commitTransaction();
         session.endSession();
 
@@ -50,6 +62,15 @@ export const generateOtp = async (userId, purpose) => {
     }
 };
 
+/**
+ * Verifies a user-entered OTP for the given user and purpose,
+ * handling failed-attempts lockout and marking the OTP used on success.
+ *
+ * @param {ObjectId} userId
+ * @param {"signup"|"resetpassword"} purpose
+ * @param {string} enteredOtp
+ * @returns {Promise<{success: boolean, attemptsLeft: number, lockoutUntil: Date|null, message: string}>}
+ */
 export const verifyOtp = async (userId, purpose, enteredOtp) => {
     try {
         const otpRecord = await Otp.findOne({
@@ -57,21 +78,21 @@ export const verifyOtp = async (userId, purpose, enteredOtp) => {
             purpose,
             isUsed: false,
             expiresAt: { $gt: new Date() },
-        }).sort({ createdAt: -1 });
+        })
+            .sort({ createdAt: -1 })
+            .exec();
 
         if (!otpRecord) {
-            throw new Error("No valid OTP found or it has expired.");
+            return { success: false, attemptsLeft: 0, lockoutUntil: null, message: "Expired or invalid OTP" };
         }
 
-        if (otpRecord.failedAttempts >= OTP_LIMIT) {
-            const lockoutTimeRemaining = otpRecord.lockoutUntil ? otpRecord.lockoutUntil - new Date() : 0;
-            if (lockoutTimeRemaining > 0) {
-                return {
-                    success: false,
-                    lockoutUntil: otpRecord.lockoutUntil,
-                    attemptsLeft: 0,
-                };
-            }
+        if (otpRecord.lockoutUntil && otpRecord.lockoutUntil > new Date()) {
+            return {
+                success: false,
+                attemptsLeft: 0,
+                lockoutUntil: otpRecord.lockoutUntil,
+                message: "Too many failed attempts. Please try again later.",
+            };
         }
 
         const isMatch = await bcrypt.compare(enteredOtp, otpRecord.otpHash);
@@ -79,20 +100,22 @@ export const verifyOtp = async (userId, purpose, enteredOtp) => {
             otpRecord.failedAttempts += 1;
 
             if (otpRecord.failedAttempts >= OTP_LIMIT) {
-                otpRecord.lockoutUntil = new Date(Date.now() + LOCKOUT_TIME);
+                otpRecord.lockoutUntil = new Date(Date.now() + OTP_LOCKOUT_TIME);
                 await otpRecord.save();
                 return {
                     success: false,
-                    lockoutUntil: otpRecord.lockoutUntil,
                     attemptsLeft: 0,
+                    lockoutUntil: otpRecord.lockoutUntil,
+                    message: "Too many failed attempts. Account locked temporarily.",
                 };
             }
 
             await otpRecord.save();
             return {
                 success: false,
-                lockoutUntil: null,
                 attemptsLeft: OTP_LIMIT - otpRecord.failedAttempts,
+                lockoutUntil: null,
+                message: "Invalid OTP. Please try again.",
             };
         }
 
@@ -103,8 +126,9 @@ export const verifyOtp = async (userId, purpose, enteredOtp) => {
 
         return {
             success: true,
-            lockoutUntil: null,
             attemptsLeft: OTP_LIMIT,
+            lockoutUntil: null,
+            message: "OTP verified successfully.",
         };
     } catch (error) {
         console.error("Error while verifying OTP:", error);

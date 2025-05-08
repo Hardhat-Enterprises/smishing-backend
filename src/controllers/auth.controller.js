@@ -1,6 +1,5 @@
 import User from "../models/user.model.js";
-import { generateOtp } from "../utils/otp.util.js";
-import { verifyOtp } from "../utils/verifyOtp.util.js";
+import { generateOtp, verifyOtp } from "../utils/otp.util.js";
 import { hashPassword, comparePassword, generateToken } from "../utils/token.util.js";
 import { sendEmail } from "../services/email.service.js";
 
@@ -93,9 +92,9 @@ export const verifyemail = async (req, res) => {
         if (!result.success) {
             return res.status(400).json({
                 success: false,
-                message: result.message || "Invalid OTP.",
-                lockoutUntil: result.lockoutUntil,
                 attemptsLeft: result.attemptsLeft,
+                lockoutUntil: result.lockoutUntil,
+                message: result.message || "Invalid OTP.",
             });
         }
 
@@ -246,9 +245,9 @@ export const resetpassword = async (req, res) => {
         if (!result.success) {
             return res.status(400).json({
                 success: false,
-                message: result.message || "Invalid or expired OTP.",
-                lockoutUntil: result.lockoutUntil,
                 attemptsLeft: result.attemptsLeft,
+                lockoutUntil: result.lockoutUntil,
+                message: result.message || "Invalid or expired OTP.",
             });
         }
 
