@@ -20,10 +20,28 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+
+        preferences: {
+            darkMode: {
+                type: Boolean,
+                default: false,
+            },
+            autoDelete: {
+                type: Boolean,
+                default: false,
+            },
+        },
+        // TO-DO: Add OTP
+        /* isEmailVerified: {
+      type: Boolean,
+      default: false,
+    }, */
+
         isEmailVerified: {
             type: Boolean,
             default: false,
         },
+
     },
     { timestamps: true },
 );
