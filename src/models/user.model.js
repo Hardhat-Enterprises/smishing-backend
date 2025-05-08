@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
     {
@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+
         preferences: {
             darkMode: {
                 type: Boolean,
@@ -35,8 +36,15 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     }, */
-    },
-    { timestamps: true }
-)
 
-module.exports = mongoose.model('User', userSchema)
+        isEmailVerified: {
+            type: Boolean,
+            default: false,
+        },
+
+    },
+    { timestamps: true },
+);
+
+const User = mongoose.model("User", userSchema);
+export default User;
