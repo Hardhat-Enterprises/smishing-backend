@@ -42,6 +42,19 @@ export const signup = async (req, res) => {
             isEmailVerified: false,
         });
 
+        // Generate OTP and hash
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpHash = await hashOtp(otpCode);
+        const expiresAt = new Date(Date.now() + Number(process.env.OTP_EXPIRY_MINUTES || 10) * 60000);
+
+        await Otp.create({
+            userId: user._id,
+            otpHash,
+            expiresAt,
+        });
+
+         await sendEmail(email, `Your verification OTP is: ${otpCode}. It will expire in 10 minutes.`)
+      
         try {
             const otpCode = await generateOtp(user._id, "signup");
             await sendEmail(email, `Your verification OTP is: ${otpCode}. It will expire in 10 minutes.`);
@@ -51,6 +64,7 @@ export const signup = async (req, res) => {
                 message: otpError.message,
             });
         }
+
 
         return res.status(201).json({
             success: true,
