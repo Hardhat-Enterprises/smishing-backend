@@ -1,15 +1,28 @@
-import express from "express";
-import { signup, verifyOtp, login } from "../controllers/auth.controller.js";
+import { Router }            from 'express';
+import { body }              from 'express-validator';
+import { signup, login }     from '../controllers/auth.controller.js';
 
-const router = express.Router();
+const router = Router();
 
-// POST /signup
-router.post("/signup", signup);
+router.post(
+  '/register',
+  [
+    body('name').trim().notEmpty().withMessage('Name is required'),
+    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('password')
+      .isLength({ min: 6 })
+      .withMessage('Password must be at least 6 characters'),
+  ],
+  signup
+);
 
-// POST /verify-otp
-router.post("/verify-otp", verifyOtp);
-
-// POST /login
-router.post("/login", login);
+router.post(
+  '/login',
+  [
+    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('password').notEmpty().withMessage('Password is required'),
+  ],
+  login
+);
 
 export default router;
