@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
         phoneNumber: {
             type: String,
             required: true,
+            unique: true, // Ensuring phone number is unique
         },
         email: {
             type: String,
@@ -24,6 +25,14 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        isPhoneVerified: {
+            type: Boolean,
+            default: false,
+        },
+        twilioSid: {
+            type: String,
+            default: null, // Store Twilio verification SID for reference
+        }
     },
     { timestamps: true },
 );

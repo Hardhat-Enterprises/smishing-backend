@@ -1,8 +1,14 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 async function connectDB() {
     try {
-        await mongoose.connect(process.env.MONGO_URI);
+        await mongoose.connect(process.env.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
         console.log("Connected to MongoDB");
     } catch (error) {
         console.error("MongoDB connection error:", error);
@@ -10,4 +16,11 @@ async function connectDB() {
     }
 }
 
+// Twilio Configuration
+export const twilioConfig = {
+    accountSid: process.env.TWILIO_ACCOUNT_SID, // Twilio Account SID
+    authToken: process.env.TWILIO_AUTH_TOKEN,   // Twilio Auth Token
+    serviceId: process.env.TWILIO_SERVICE_ID    // Twilio Verify Service ID
+};
+console.log("Twilio Config:", twilioConfig); // <-- Add this for debugging
 export default connectDB;
