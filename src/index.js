@@ -3,6 +3,7 @@ import express from "express";
 import connectDB from "./configs/db.config.js";
 import authRoute from "./routes/auth.route.js";
 import emailRoutes from "./routes/email.route.js";
+import riskRoutes from "./routes/risk.route.js";
 
 
 
@@ -16,6 +17,7 @@ connectDB();
 // Mount auth routes at /api/auth
 app.use("/api/auth", authRoute);
 app.use("/api", emailRoutes);
+app.use("/api/risk", riskRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
