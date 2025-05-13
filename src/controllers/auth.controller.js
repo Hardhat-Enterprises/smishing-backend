@@ -9,9 +9,7 @@ dotenv.config();
 
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-/**
- * POST /api/auth/signup
- */
+
 /**
  * POST /api/auth/signup
  */
@@ -19,6 +17,7 @@ export const signup = async (req, res) => {
     try {
         const { fullName, phoneNumber, email, password } = req.body;
 
+        // 🟢 Input Validation
         if (!fullName || !phoneNumber || !email || !password) {
             return res.status(400).json({
                 success: false,
@@ -26,15 +25,8 @@ export const signup = async (req, res) => {
             });
         }
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(409).json({
-                success: false,
-                message: "Unable to register. Please try again.",
-            });
-        }
-
-        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        // 🟢 Stronger Email Regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(422).json({
                 success: false,
@@ -42,46 +34,54 @@ export const signup = async (req, res) => {
             });
         }
 
+        // 🟢 Check if User Already Exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({
+                success: false,
+                message: "User already registered. Please try logging in.",
+            });
+        }
+
+        // 🟢 Hash the Password
         const passwordHash = await hashPassword(password);
+
+        // 🟢 Create the User
         const user = await User.create({
             fullName,
             phoneNumber,
             email,
             passwordHash,
             isEmailVerified: false,
-            isPhoneVerified: false, // Add this if it is not there
+            isPhoneVerified: false,
         });
 
-        // 🔹 Send OTP to the user's phone
+        // 🟢 Send Verification Code (Moved to Service)
         try {
-            const response = await client.verify
-                .services(process.env.TWILIO_SERVICE_ID)
-                .verifications.create({
-                    to: phoneNumber,
-                    channel: "sms",
-                });
-
-            console.log(`✅ Verification code sent to ${phoneNumber}`, response.sid);
+            await sendVerificationCode(phoneNumber);
+            console.log(`Verification code sent to ${phoneNumber}`);
         } catch (otpError) {
-            console.error(`❌ Failed to send OTP: ${otpError.message}`);
+            console.error(`Failed to send OTP:`, otpError); // Full error logging
             return res.status(400).json({
                 success: false,
                 message: "Failed to send OTP for phone verification.",
             });
         }
 
+        // 🟢 Response
         return res.status(201).json({
             success: true,
             message: "User registered successfully. Please verify your phone number.",
         });
     } catch (error) {
-        console.error("Error in signup:", error);
+        console.error("Error in signup:", error); // Full error logging
         return res.status(500).json({
             success: false,
             message: "Internal server error.",
         });
     }
 };
+
 
 
 /**
