@@ -4,6 +4,7 @@ import connectDB from "./configs/db.config.js";
 import authRoute from "./routes/auth.route.js";
 import chatbotRoute from "./routes/chatbot.route.js";
 import newsRoute from "./routes/news.route.js";
+import reportRoute from "./routes/report.route.js";
 
 const app = express();
 app.use(express.json());
@@ -15,6 +16,7 @@ connectDB();
 app.use("/api/auth", authRoute);
 app.use("/", chatbotRoute);
 app.use("/api/news", newsRoute);
+app.use("/api/report", reportRoute);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
