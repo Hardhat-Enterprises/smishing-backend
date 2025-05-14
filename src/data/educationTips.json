@@ -1,0 +1,51 @@
+[
+    {
+      "level": "beginner",
+      "tip": "Never share your OTP or bank details with anyone, even if they claim to be from your bank."
+    },
+    {
+      "level": "beginner",
+      "tip": "Avoid clicking on links in SMS from unknown numbers."
+    },
+    {
+      "level": "beginner",
+      "tip": "Legitimate companies will never ask for sensitive info via SMS."
+    },
+    {
+      "level": "beginner",
+      "tip": "If a message sounds too urgent or threatening, pause and verify it first."
+    },
+    {
+      "level": "intermediate",
+      "tip": "Always check the sender's number and look for typos or suspicious formatting in SMS."
+    },
+    {
+      "level": "intermediate",
+      "tip": "Never reply to a smishing message – it confirms your number is active."
+    },
+    {
+      "level": "intermediate",
+      "tip": "Use your bank's official app or website rather than clicking on message links."
+    },
+    {
+      "level": "intermediate",
+      "tip": "Block and report numbers that send fraudulent messages."
+    },
+    {
+      "level": "advanced",
+      "tip": "Enable spam detection on your device or install an SMS filtering app."
+    },
+    {
+      "level": "advanced",
+      "tip": "Monitor your credit card and bank statements regularly for unauthorized charges."
+    },
+    {
+      "level": "advanced",
+      "tip": "Consider using two-factor authentication for all sensitive apps and accounts."
+    },
+    {
+      "level": "advanced",
+      "tip": "Educate your family members about common scam tactics and how to avoid them."
+    }
+  ]
+  
