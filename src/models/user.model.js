@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
     {
@@ -20,13 +20,13 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        // TO-DO: Add OTP
-        /* isEmailVerified: {
-      type: Boolean,
-      default: false,
-    }, */
+        isEmailVerified: {
+            type: Boolean,
+            default: false,
+        },
     },
-    { timestamps: true }
-)
+    { timestamps: true },
+);
 
-module.exports = mongoose.model('User', userSchema)
+const User = mongoose.model("User", userSchema);
+export default User;

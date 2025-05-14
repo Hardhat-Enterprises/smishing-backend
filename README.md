@@ -74,6 +74,14 @@ cp .env.example .env
 Fill in required values:
 
 - `MONGO_URI=<your_mongodb_connection_string>`
+- `PORT` (optional, default `3000`)
+- `EMAIL_USER=<your_email_address>`
+- `EMAIL_PASS=<your_app_password>` (generate [here](https://myaccount.google.com/apppasswords))
+- `JWT_SECRET=` (optional, default `mysecret`)
+- `OTP_EXPIRY_MINUTES=` (optional, default `10`)
+- `OTP_LENGTH=` (optional, default `6`)
+- `OTP_LIMIT=` (optional, default `5`)
+- `OTP_LOCKOUT_TIME=` (optional, default `10 * 60 * 1000`)
 
 ### 4. Running the Server
 
