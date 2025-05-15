@@ -32,7 +32,7 @@ const authenticateToken = (req, res, next) => {
 /**
  * GET /api/whitelist
  */
-export const getWhitelist = [
+export const get = [
     authenticateToken,
     async (req, res) => {
         try {
@@ -54,7 +54,7 @@ export const getWhitelist = [
 /**
  * POST /api/whitelist
  */
-export const addToWhitelist = [
+export const add = [
     authenticateToken,
     async (req, res) => {
         const { phoneNumber } = req.body;
@@ -86,7 +86,7 @@ export const addToWhitelist = [
 /**
  * DELETE /api/whitelist
  */
-export const removeFromWhitelist = [
+export const remove = [
     authenticateToken,
     async (req, res) => {
         try {
