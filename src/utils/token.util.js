@@ -15,3 +15,7 @@ export async function comparePassword(password, hash) {
 export function generateToken(payload) {
     return jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
 }
+
+export function verifyToken(token) {
+    return jwt.verify(token, JWT_SECRET);
+}
