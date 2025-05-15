@@ -24,9 +24,16 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        // Added field for user role
+        role: {
+            type: String,
+            enum: ["guest", "user", "admin", "qa", "dev"],
+            default: "user", // Defaut Role
+        },
     },
     { timestamps: true },
 );
 
 const User = mongoose.model("User", userSchema);
+
 export default User;
