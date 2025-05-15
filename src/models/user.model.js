@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        whitelist: {
+            type: [String],
+            default: [],
+        },
         email: {
             type: String,
             required: true,
