@@ -2,6 +2,17 @@ import "dotenv/config";
 import express from "express";
 import connectDB from "./configs/db.config.js";
 import authRoute from "./routes/auth.route.js";
+import blacklistRoutes from './routes/blacklist.route.js';
+import reportLogRoutes from './routes/reportlog.route.js';
+
+import reputationRoutes from './routes/reputation.route.js';
+
+
+
+
+
+
+
 
 const app = express();
 app.use(express.json());
@@ -11,6 +22,9 @@ connectDB();
 
 // Mount auth routes at /api/auth
 app.use("/api/auth", authRoute);
+app.use('/api/blacklist', blacklistRoutes);
+app.use('/api/reportlog', reportLogRoutes);
+app.use('/api/reputation', reputationRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
