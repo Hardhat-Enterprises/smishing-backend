@@ -1,15 +1,15 @@
 import express from "express";
-import { getWhitelist, addToWhitelist, removeFromWhitelist} from "../controllers/whitelist.controller.js";
+import { get, add, remove} from "../controllers/whitelist.controller.js";
 
 const router = express.Router();
 
-// GET /getWhitelist
-router.get("/getWhitelist", getWhitelist);
+// GET /get
+router.get("/get", get);
 
-// POST /addToWhitelist
-router.post("/addToWhitelist", addToWhitelist);
+// POST /add
+router.post("/add", add);
 
-// DELETE /removeFromWhitelist
-router.delete("/removeFromWhitelist", removeFromWhitelist);
+// DELETE /remove
+router.delete("/remove", remove);
 
 export default router;
