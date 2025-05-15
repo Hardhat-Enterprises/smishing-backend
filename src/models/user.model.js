@@ -24,9 +24,17 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        guardianId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: false,
+        },
+        fcmToken: {
+            type: String,
+            required: false,
+        },
     },
     { timestamps: true },
 );
 
-const User = mongoose.model("User", userSchema);
-export default User;
+export default mongoose.model("User", userSchema);
