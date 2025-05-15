@@ -30,7 +30,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 /**
- * GET /api/whitelist
+ * GET /api/whitelist/get
  */
 export const get = [
     authenticateToken,
@@ -52,7 +52,7 @@ export const get = [
 ];
 
 /**
- * POST /api/whitelist
+ * POST /api/whitelist/add
  */
 export const add = [
     authenticateToken,
@@ -84,7 +84,7 @@ export const add = [
 ];
 
 /**
- * DELETE /api/whitelist
+ * DELETE /api/whitelist/remove
  */
 export const remove = [
     authenticateToken,
