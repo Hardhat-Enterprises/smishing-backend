@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
         phoneNumber: {
             type: String,
             required: true,
+            unique: true, // Ensuring phone number is unique
         },
         email: {
             type: String,
@@ -23,7 +24,7 @@ const userSchema = new mongoose.Schema(
         isEmailVerified: {
             type: Boolean,
             default: false,
-        },
+        }
     },
     { timestamps: true },
 );
