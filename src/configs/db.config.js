@@ -15,12 +15,4 @@ async function connectDB() {
         process.exit(1); // Exit if database connection fails
     }
 }
-
-// Twilio Configuration
-export const twilioConfig = {
-    accountSid: process.env.TWILIO_ACCOUNT_SID, // Twilio Account SID
-    authToken: process.env.TWILIO_AUTH_TOKEN,   // Twilio Auth Token
-    serviceId: process.env.TWILIO_SERVICE_ID    // Twilio Verify Service ID
-};
-console.log("Twilio Config:", twilioConfig); // <-- Add this for debugging
 export default connectDB;
