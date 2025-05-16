@@ -1,13 +1,8 @@
 import User from "../models/user.model.js";
 import { generateOtp, verifyOtp } from "../utils/otp.util.js";
 import { hashPassword, comparePassword, generateToken } from "../utils/token.util.js";
-import { sendEmail } from "../services/email.service.js";
-import { sendVerificationCode } from "../services/phone.service.js";
-import twilio from "twilio";
 import dotenv from "dotenv";
 dotenv.config();
-
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 
 /**
@@ -53,20 +48,8 @@ export const signup = async (req, res) => {
             email,
             passwordHash,
             isEmailVerified: false,
-            isPhoneVerified: false,
+        
         });
-
-        // 🟢 Send Verification Code (Moved to Service)
-        try {
-            await sendVerificationCode(phoneNumber);
-            console.log(`Verification code sent to ${phoneNumber}`);
-        } catch (otpError) {
-            console.error(`Failed to send OTP:`, otpError); // Full error logging
-            return res.status(400).json({
-                success: false,
-                message: "Failed to send OTP for phone verification.",
-            });
-        }
 
         // 🟢 Response
         return res.status(201).json({
@@ -133,52 +116,6 @@ export const verifyemail = async (req, res) => {
     }
 };
 
-/**
- * POST /api/auth/verify-phone
- */
-export const verifyPhone = async (req, res) => {
-    try {
-        const { phoneNumber, code } = req.body;
-
-        if (!phoneNumber || !code) {
-            return res.status(400).json({
-                success: false,
-                message: "Phone number and code are required.",
-            });
-        }
-
-        const verificationCheck = await client.verify
-            .services(process.env.TWILIO_SERVICE_ID)
-            .verificationChecks.create({
-                to: phoneNumber,
-                code: code,
-            });
-
-        if (verificationCheck.status === "approved") {
-            await User.findOneAndUpdate(
-                { phoneNumber },
-                { isPhoneVerified: true }
-            );
-
-            return res.status(200).json({
-                success: true,
-                message: "Phone number verified successfully.",
-            });
-        } else {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid or expired verification code.",
-            });
-        }
-    } catch (error) {
-        console.error("Error in phone verification:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error.",
-        });
-    }
-};
-
 
 /**
  * POST /api/auth/login
@@ -224,13 +161,6 @@ export const login = async (req, res) => {
                 message: "Please verify your email before logging in.",
             });
         } 
-         // 🔹 Check if phone number is verified
-         if (!user.isPhoneVerified) {
-            return res.status(403).json({
-                success: false,
-                message: "Please verify your phone number before logging in.",
-            });
-        }
         const token = generateToken({ userId: user._id });
 
         return res.status(200).json({
