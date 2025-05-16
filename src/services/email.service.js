@@ -1,14 +1,6 @@
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
 
-dotenv.config(); // Load environment variables
-
-export async function sendEmail(to, subject, text) {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.error("Missing email credentials.");
-        throw new Error("Email credentials are not defined in .env");
-    }
-    const recipientList = Array.isArray(to) ? to.join(",") : to;
+export async function sendEmail(to, text) {
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 465,
@@ -20,11 +12,9 @@ export async function sendEmail(to, subject, text) {
     });
 
     await transporter.sendMail({
-        from: `"Smishing Detection Team" <${process.env.EMAIL_USER}>`,
-        to: recipientList,
-        subject,
+        from: process.env.EMAIL_USER,
+        to,
+        subject: "OTP Verification",
         text,
     });
-
-    console.log(`Email sent to ${to} | Subject: ${subject}`);
 }
