@@ -4,8 +4,7 @@ import {
     verifyemail,
     login,
     forgotpassword,
-    resetpassword,
-    verifyPhone
+    resetpassword
 } from "../controllers/auth.controller.js";
 
 
@@ -17,8 +16,6 @@ router.post("/signup", signup);
 // POST /verify-email
 router.post("/verify-email", verifyemail);
 
-// POST /verify-phone (New Route for Phone Verification)
-router.post("/verify-phone", verifyPhone);
 
 // POST /login
 router.post("/login", login);
