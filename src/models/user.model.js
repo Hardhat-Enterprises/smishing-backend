@@ -24,14 +24,6 @@ const userSchema = new mongoose.Schema(
         isEmailVerified: {
             type: Boolean,
             default: false,
-        },
-        isPhoneVerified: {
-            type: Boolean,
-            default: false,
-        },
-        twilioSid: {
-            type: String,
-            default: null, // Store Twilio verification SID for reference
         }
     },
     { timestamps: true },
