@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "nodemon src/index.js",
         "format": "prettier --write .",
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js && exit 1",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
         "prepare": "husky"
     },
     "dependencies": {
