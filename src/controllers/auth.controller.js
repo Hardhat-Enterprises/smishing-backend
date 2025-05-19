@@ -2,6 +2,9 @@ import User from "../models/user.model.js";
 import { generateOtp, verifyOtp } from "../utils/otp.util.js";
 import { hashPassword, comparePassword, generateToken } from "../utils/token.util.js";
 import { sendEmail } from "../services/email.service.js";
+import dotenv from "dotenv";
+dotenv.config();
+
 
 /**
  * POST /api/auth/signup
@@ -10,6 +13,7 @@ export const signup = async (req, res) => {
     try {
         const { fullName, phoneNumber, email, password } = req.body;
 
+        // 🟢 Input Validation
         if (!fullName || !phoneNumber || !email || !password) {
             return res.status(400).json({
                 success: false,
@@ -17,15 +21,8 @@ export const signup = async (req, res) => {
             });
         }
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(409).json({
-                success: false,
-                message: "Unable to register. Please try again.",
-            });
-        }
-
-        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        // 🟢 Stronger Email Regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(422).json({
                 success: false,
@@ -33,7 +30,19 @@ export const signup = async (req, res) => {
             });
         }
 
+        // 🟢 Check if User Already Exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({
+                success: false,
+                message: "User already registered. Please try logging in.",
+            });
+        }
+
+        // 🟢 Hash the Password
         const passwordHash = await hashPassword(password);
+
+        // 🟢 Create the User
         const user = await User.create({
             fullName,
             phoneNumber,
@@ -42,28 +51,21 @@ export const signup = async (req, res) => {
             isEmailVerified: false,
         });
 
-        try {
-            const otpCode = await generateOtp(user._id, "signup");
-            await sendEmail(email, `Your verification OTP is: ${otpCode}. It will expire in 10 minutes.`);
-        } catch (otpError) {
-            return res.status(400).json({
-                success: false,
-                message: otpError.message,
-            });
-        }
-
+        // 🟢 Response
         return res.status(201).json({
             success: true,
-            message: "User registered successfully. Please verify your email.",
+            message: "User registered successfully. Please verify your phone number.",
         });
     } catch (error) {
-        console.error("Error in signup:", error);
+        console.error("Error in signup:", error); // Full error logging
         return res.status(500).json({
             success: false,
             message: "Internal server error.",
         });
     }
 };
+
+
 
 /**
  * POST /api/auth/verify-email
@@ -114,6 +116,8 @@ export const verifyemail = async (req, res) => {
     }
 };
 
+
+
 /**
  * POST /api/auth/login
  */
@@ -157,8 +161,8 @@ export const login = async (req, res) => {
                 success: false,
                 message: "Please verify your email before logging in.",
             });
-        }
-
+        } 
+        
         const token = generateToken({ userId: user._id });
 
         return res.status(200).json({
