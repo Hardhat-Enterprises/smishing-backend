@@ -10,13 +10,20 @@
     },
     "dependencies": {
         "bcrypt": "^5.1.1",
+        "dialogflow": "^1.2.0",
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
+
+        "json2csv": "^6.0.0-alpha.2",
+
         "express-rate-limit": "^7.5.0",
         "helmet": "^8.1.0",
+
         "jsonwebtoken": "^9.0.2",
         "mongoose": "^8.13.1",
-        "nodemailer": "^6.10.0"
+        "nodemailer": "^6.10.0",
+        "pdfkit": "^0.17.1",
+        "uuid": "^11.1.0"
     },
     "devDependencies": {
         "husky": "^9.1.7",

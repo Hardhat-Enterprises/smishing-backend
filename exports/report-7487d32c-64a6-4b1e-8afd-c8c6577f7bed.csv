@@ -1,0 +1,3 @@
+"id","type","content","status","createdAt","sourceId","sourceType","additionalInfo"
+"68233d8cfbea1559d2f7970f","INAPPROPRIATE","The second smishing message","PENDING","2025-05-13T12:39:40.039Z","messageId1234","message","{""reason"":""Contains offensive language"",""context"":""In a public chat""}"
+"68233cf8473a5221913ca8ff","INAPPROPRIATE","This message contains smishing content","PENDING","2025-05-13T12:37:12.330Z","messageId123","message","{""reason"":""Contains offensive language"",""context"":""In a public chat""}"
