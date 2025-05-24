@@ -2,6 +2,10 @@ import "dotenv/config";
 import express from "express";
 import connectDB from "./configs/db.config.js";
 import authRoute from "./routes/auth.route.js";
+
+import chatbotRoute from "./routes/chatbot.route.js";
+import newsRoute from "./routes/news.route.js";
+
 import spamRoute from "./routes/spam.route.js";
 import contactRoute from "./routes/contact.route.js";
 import securityMiddleware from "./middlewares/security.middleware.js";
@@ -9,6 +13,7 @@ import { apiLimiter, authLimiter } from "./middlewares/rateLimiter.middleware.js
 
 // calling body-parser to handle the Request Object from POST requests
 import bodyParser from "body-parser";
+
 
 const app = express();
 
@@ -26,7 +31,10 @@ app.use(bodyParser.urlencoded({ extended: true }))
 connectDB();
 
 // Mount auth routes at /api/auth
+
 app.use("/api/auth", authLimiter, authRoute);
+app.use("/", chatbotRoute);
+app.use("/api/news", newsRoute);
 
 // Mount contact routes at /api/contact
 app.use("/api/contact", contactRoute);
@@ -35,6 +43,7 @@ app.use("/api/contact", contactRoute);
 app.use('/api/spam', spamRoute)
 
 const PORT = process.env.PORT || 3000
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
