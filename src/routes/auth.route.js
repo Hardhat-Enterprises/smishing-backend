@@ -1,21 +1,67 @@
-import express from "express";
-import { signup, verifyemail, login, forgotpassword, resetpassword } from "../controllers/auth.controller.js";
+import { Router } from 'express';
+import { body } from 'express-validator';
+import {
+  signup,
+  verifyEmail,
+  login,
+  forgotPassword,
+  resetPassword
+} from '../controllers/auth.controller.js';
 
-const router = express.Router();
+const router = Router();
 
-// POST /signup
-router.post("/signup", signup);
+// POST /api/auth/register
+router.post(
+  '/register',
+  [
+    body('fullName').trim().notEmpty().withMessage('Full name is required'),
+    body('phoneNumber').trim().notEmpty().withMessage('Phone number is required'),
+    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+  ],
+  signup
+);
 
-// POST /verify-email
-router.post("/verify-email", verifyemail);
+// POST /api/auth/verify-email
+router.post(
+  '/verify-email',
+  [
+    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('otp').trim().notEmpty().withMessage('OTP is required')
+  ],
+  verifyEmail
+);
 
-// POST /login
-router.post("/login", login);
+// POST /api/auth/login
+router.post(
+  '/login',
+  [
+    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('password').notEmpty().withMessage('Password is required')
+  ],
+  login
+);
 
-// POST /forgot-password
-router.post("/forgot-password", forgotpassword);
+// POST /api/auth/forgot-password
+router.post(
+  '/forgot-password',
+  [
+    body('email').isEmail().withMessage('Valid email is required').normalizeEmail()
+  ],
+  forgotPassword
+);
 
-// POST /reset-password
-router.post("/reset-password", resetpassword);
+// POST /api/auth/reset-password
+router.post(
+  '/reset-password',
+  [
+    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('newPassword')
+      .isLength({ min: 6 })
+      .withMessage('New password must be at least 6 characters'),
+    body('otp').trim().notEmpty().withMessage('OTP is required')
+  ],
+  resetPassword
+);
 
 export default router;

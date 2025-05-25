@@ -1,20 +1,32 @@
-import "dotenv/config";
-import express from "express";
-import connectDB from "./configs/db.config.js";
-import authRoute from "./routes/auth.route.js";
+import 'dotenv/config';
+import express from 'express';
+import connectDB from './configs/db.config.js';
+
+import authRouter    from './routes/auth.route.js';
+import contactsRouter from './routes/contacts.route.js';
 
 const app = express();
 app.use(express.json());
 
-// Connect to MongoDB
-connectDB();
+// 1) connect
+await connectDB();
 
-// Mount auth routes at /api/auth
-app.use("/api/auth", authRoute);
+// 2) mount
+app.use('/api/auth',    authRouter);
+app.use('/api/contacts', contactsRouter);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// 3) 404
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
-export default app;
+// 4) error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal server error' });
+});
+
+const PORT = Number(process.env.PORT) || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+});
