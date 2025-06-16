@@ -25,6 +25,9 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 // Connect to MongoDB
 connectDB();
+console.log("Twilio SID:", process.env.TWILIO_ACCOUNT_SID);
+console.log("Twilio Auth Token:", process.env.TWILIO_AUTH_TOKEN);
+console.log("Twilio Service ID:", process.env.TWILIO_SERVICE_ID);
 
 // Mount auth routes at /api/auth
 app.use("/api/auth", authLimiter, authRoute);

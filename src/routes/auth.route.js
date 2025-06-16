@@ -1,5 +1,13 @@
 import express from "express";
-import { signup, verifyemail, login, forgotpassword, resetpassword } from "../controllers/auth.controller.js";
+import {
+    signup,
+    verifyemail,
+    login,
+    forgotpassword,
+    resetpassword,
+    verifyPhone
+} from "../controllers/auth.controller.js";
+
 
 const router = express.Router();
 
@@ -8,6 +16,9 @@ router.post("/signup", signup);
 
 // POST /verify-email
 router.post("/verify-email", verifyemail);
+
+// POST /verify-phone (New Route for Phone Verification)
+router.post("/verify-phone", verifyPhone);
 
 // POST /login
 router.post("/login", login);
