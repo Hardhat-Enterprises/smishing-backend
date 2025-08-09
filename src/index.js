@@ -12,6 +12,11 @@ connectDB();
 // Mount auth routes at /api/auth
 app.use("/api/auth", authRoute);
 
+// ✅ Status check route
+app.get("/api/status", (req, res) => {
+    res.json({ message: "Server is alive!" });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
