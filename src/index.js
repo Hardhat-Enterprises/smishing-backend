@@ -13,6 +13,8 @@ import feedbackRoutes from "./routes/feedbackRoutes.js";
 import bodyParser from "body-parser";
 
 const app = express();
+// So req.ip is real when behind nginx/Cloudflare/Render/etc.
+app.set("trust proxy", true);
 
 // Apply security headers middleware
 app.use(securityMiddleware);
