@@ -6,8 +6,13 @@ const userSchema = new mongoose.Schema(
         phoneNumber: { type: String, required: true },
         email: { type: String, required: true, unique: true, lowercase: true },
         passwordHash: { type: String, required: true },
-        pinHash: { type: String, default: null }, // hashed 4–6 digit PIN (optional)
+        pinHash: { type: String, default: null }, // 6 digit PIN
         isEmailVerified: { type: Boolean, default: false },
+
+        loginAttempts: {
+            count: { type: Number, default: 0 },
+            lockUntil: { type: Date, default: null },
+        },
     },
     { timestamps: true },
 );

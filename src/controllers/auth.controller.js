@@ -6,7 +6,6 @@ import { sendEmail } from "../services/email.service.js";
 
 /**
  * POST /api/auth/signup
- * Accepts optional 4–6 digit PIN; returns devOtp when EMAIL_DISABLED=true
  */
 export const signup = async (req, res) => {
     try {
@@ -32,12 +31,12 @@ export const signup = async (req, res) => {
             return res.status(422).json({ success: false, message: "Invalid email format." });
         }
 
-        // optional 4–6 digit PIN
+        // optional 6 digit PIN
         let pinHash = null;
         if (pin !== undefined) {
             const pinStr = String(pin);
-            if (!/^\d{4,6}$/.test(pinStr)) {
-                return res.status(422).json({ success: false, message: "PIN must be 4–6 digits." });
+            if (!/^\d{6}$/.test(pinStr)) {
+                return res.status(422).json({ success: false, message: "PIN must be 6 digits." });
             }
             pinHash = await hashPassword(pinStr);
         }
@@ -73,7 +72,7 @@ export const signup = async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal server error." });
     }
 };
-
+console.log("VERIFY REQUEST BODY:", req.body);
 /**
  * POST /api/auth/verify-email
  */
@@ -89,6 +88,13 @@ export const verifyemail = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
+        const now = new Date();
+        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+            return res.status(429).json({
+                success: false,
+                message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
+            });
+        }
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -146,6 +152,13 @@ export const login = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
+        const now = new Date();
+        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+            return res.status(429).json({
+                success: false,
+                message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
+            });
+        }
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -170,6 +183,11 @@ export const login = async (req, res) => {
 
         const token = generateToken({ userId: user._id });
 
+        if (user.loginAttempts) {
+            user.loginAttempts.count = 0;
+            user.loginAttempts.lockUntil = null;
+            await user.save();
+        }
         return res.status(200).json({
             success: true,
             message: "Login successful.",
@@ -195,6 +213,13 @@ export const loginWithPin = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
+        const now = new Date();
+        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+            return res.status(429).json({
+                success: false,
+                message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
+            });
+        }
         if (!user) return res.status(401).json({ success: false, message: "Invalid email." });
 
         if (!user.isEmailVerified) {
@@ -209,6 +234,11 @@ export const loginWithPin = async (req, res) => {
         if (!ok) return res.status(401).json({ success: false, message: "Invalid PIN." });
 
         const token = generateToken({ userId: user._id });
+        if (user.loginAttempts) {
+            user.loginAttempts.count = 0;
+            user.loginAttempts.lockUntil = null;
+            await user.save();
+        }
         return res.status(200).json({ success: true, message: "Login successful.", token });
     } catch (error) {
         console.error(error);
@@ -231,6 +261,13 @@ export const forgotpassword = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
+        const now = new Date();
+        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+            return res.status(429).json({
+                success: false,
+                message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
+            });
+        }
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -248,6 +285,11 @@ export const forgotpassword = async (req, res) => {
             });
         }
 
+        if (user.loginAttempts) {
+            user.loginAttempts.count = 0;
+            user.loginAttempts.lockUntil = null;
+            await user.save();
+        }
         return res.status(200).json({
             success: true,
             message: "OTP sent to email for password reset",
@@ -275,6 +317,13 @@ export const resetpassword = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
+        const now = new Date();
+        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+            return res.status(429).json({
+                success: false,
+                message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
+            });
+        }
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -297,6 +346,11 @@ export const resetpassword = async (req, res) => {
         user.passwordHash = passwordHash;
         await user.save();
 
+        if (user.loginAttempts) {
+            user.loginAttempts.count = 0;
+            user.loginAttempts.lockUntil = null;
+            await user.save();
+        }
         return res.status(200).json({
             success: true,
             message: "Password reset successful. You can now log in with your new password.",

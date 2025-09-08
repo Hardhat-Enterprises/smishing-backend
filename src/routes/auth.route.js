@@ -13,7 +13,7 @@ const router = express.Router();
 router.post("/signup", signup);
 router.post("/verify-email", verifyemail);
 router.post("/login", login);
-router.post("/login-pin", loginWithPin); // new
+router.post("/login-pin", loginWithPin);
 router.post("/forgot-password", forgotpassword);
 router.post("/reset-password", resetpassword);
 
