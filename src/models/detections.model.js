@@ -5,6 +5,10 @@ const detectionsSchema = new mongoose.Schema({
         type: Date,
         required: true,
     },
+    phoneNumber: {
+        type: String,
+        required: true,
+    },
     status: {
         type: String,
         required: true,

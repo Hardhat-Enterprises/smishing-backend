@@ -2,20 +2,20 @@ import { getFilteredDetections } from "../services/detections.service.js";
 
 export const exportCSV = async (req, res) => {
     try {
-        const { status, type, startDate, endDate } = req.query;
+        const { status, type, startDate, endDate, phoneNumber } = req.query;
 
-        const detections = await getFilteredDetections({
+        const detectionsCSV = await getFilteredDetections({
             status,
             type,
             startDate,
             endDate,
+            phoneNumber,
         });
 
-        res.status(200).json({
-            success: true,
-            count: detections.length,
-            data: detections,
-        });
+        res.header("Content-Type", "text/csv");
+        res.attachment("detections.csv");
+
+        return res.send(detectionsCSV);
     } catch (error) {
         console.error("Error in exporting detections:", error);
         return res.status(500).json({
