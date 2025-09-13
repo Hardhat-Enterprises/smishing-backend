@@ -1,5 +1,7 @@
 import express from "express";
 import { signup, verifyemail, login, forgotpassword, resetpassword } from "../controllers/auth.controller.js";
+import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { changePassword } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
@@ -17,5 +19,7 @@ router.post("/forgot-password", forgotpassword);
 
 // POST /reset-password
 router.post("/reset-password", resetpassword);
+
+router.post("/change-password", authMiddleware, changePassword);
 
 export default router;

@@ -5,6 +5,7 @@ import { sendEmail } from "../services/email.service.js";
 import LoginActivity from "../models/loginActivity.model.js";
 import { getClientIP } from "../utils/ip.js";
 import { isNewIPOrDevice, userAgentLabel } from "../utils/securitySignals.js";
+import bcrypt from "bcrypt";
 
 const LOCKOUT_THRESHOLD = Number(process.env.LOCKOUT_THRESHOLD || 5);
 const LOCKOUT_MINUTES = Number(process.env.LOCKOUT_MINUTES || 15);
@@ -347,5 +348,64 @@ export const resetpassword = async (req, res) => {
             success: false,
             message: "Internal server error.",
         });
+    }
+};
+
+/**
+ * POST /api/auth/change-password
+ * Body: { currentPassword, newPassword, confirmNewPassword }
+ * Auth: Required (Bearer token via authMiddleware)
+ */
+export const changePassword = async (req, res) => {
+    try {
+        const userId = req.user?.id; // set by authMiddleware
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthenticated" });
+        }
+
+        const { currentPassword, newPassword, confirmNewPassword } = req.body || {};
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+        if (newPassword !== confirmNewPassword) {
+            return res.status(400).json({ success: false, message: "Passwords do not match" });
+        }
+
+        const user = await User.findById(userId).select("+passwordHash +tokenVersion +email");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // verify current password
+        const ok = await bcrypt.compare(currentPassword, user.passwordHash);
+        if (!ok) {
+            return res.status(400).json({ success: false, message: "Current password is incorrect" });
+        }
+
+        // block reusing the same password
+        const sameAsOld = await bcrypt.compare(newPassword, user.passwordHash);
+        if (sameAsOld) {
+            return res.status(400).json({
+                success: false,
+                message: "New password must be different from current password",
+            });
+        }
+
+        // hash new password
+        const cost = 12; // tune to ~200–300ms on your server
+        user.passwordHash = await bcrypt.hash(newPassword, cost);
+
+        // invalidate existing sessions/refresh tokens if you use them
+        user.tokenVersion = (user.tokenVersion || 0) + 1;
+        user.passwordUpdatedAt = new Date();
+
+        await user.save();
+
+        // Optional: send security email / log event here
+
+        return res.status(200).json({ success: true, message: "Password changed. Please sign in again." });
+    } catch (err) {
+        console.error("changePassword error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };

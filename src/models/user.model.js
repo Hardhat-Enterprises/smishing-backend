@@ -24,6 +24,14 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        tokenVersion: {
+            type: Number,
+            default: 0,
+            select: true,
+        },
+        passwordUpdatedAt: {
+            type: Date,
+        },
         //  Security state used by login activity/alerts/lockout
         security: {
             failedLogins: { type: Number, default: 0 },
@@ -32,6 +40,8 @@ const userSchema = new mongoose.Schema(
             lastLoginAt: { type: Date, default: null },
             lastLoginIP: { type: String, default: "" },
             lastLoginUA: { type: String, default: "" },
+            tokenVersion: { type: Number, default: 0, select: true },
+            passwordUpdatedAt: { type: Date },
         },
     },
     { timestamps: true },
