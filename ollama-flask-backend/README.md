@@ -1,23 +1,60 @@
-# AI Chat API (Flask)
+---
 
-Flask microservice that proxies Android app chat requests to a local Ollama server.
+# Flask Service README (ollama-flask-backend/README.md)
 
-## Run (Windows)
+markdown
+# Ollama Flask Backend
 
-1) Start Ollama:
-   - ollama serve
-   - Have a small model ready, e.g. ollama pull llama3.2:1b
+This microservice proxies chat requests to a locally running [Ollama](https://ollama.ai) server.  
+It is part of the **Smishing Backend**, but can be run standalone.
 
-2) Setup & run:
-cd chat_api.py
+---
+
+## ⚙ Setup
+
+### 1. Prerequisites
+
+- Python 3.10+
+- Ollama installed and running
+- Node.js service (optional if integrated)
+
+---
+
+### 2. Installation
+
+bash
 py -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
-py chat_api.py
-Service: http://localhost:5000/chat/api/generate  
-Health: http://localhost:5000/health
 
-## Android
-Use this URL in the emulator:
-http://10.0.2.2:5000/chat/api/generate
+3. Run
+   py chat_api.py
+
+Service runs on:
+http://localhost:5000
+
+Endpoints
+
+Health
+GET /health
+
+Response:
+{ "status": "ok" }
+
+Chat
+POST /chat/api/generate
+
+Body:
+{ "prompt": "hello" }
+
+Response:
+{ "response": "Hello, how can I help you?" }
+
+Environment Variables
+
+.env
+FLASK_PORT=5000
+FLASK_DEBUG=false
+FLASK_API_KEY=super-secret-key
+OLLAMA_URL=http://localhost:11434/api/generate

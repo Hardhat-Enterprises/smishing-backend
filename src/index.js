@@ -1,25 +1,56 @@
-import "dotenv/config";
+// src/index.js
+import dotenv from "dotenv";
 import express from "express";
-import connectDB from "./configs/db.config.js";
+import helmet from "helmet";
+import cors from "cors";
+import morgan from "morgan";
+
+import securityMiddleware from "./middlewares/security.middleware.js";
+import { globalLimiter, authLimiter } from "./middlewares/rateLimiter.middleware.js";
+
+import scanRoute from "./routes/scan.route.js";
+import chatRoute from "./routes/chat.route.js";
+import contactRoute from "./routes/contact.route.js";
+import spamRoute from "./routes/spam.route.js";
 import authRoute from "./routes/auth.route.js";
 
+dotenv.config();
+
 const app = express();
-app.use(express.json());
+const PORT = process.env.PORT || 4000;
 
-// Connect to MongoDB
-connectDB();
+// --- Middleware ---
+app.use(helmet()); // security headers
+app.use(cors()); // allow cross-origin
+app.use(morgan("dev")); // request logging
+app.use(express.json()); // parse JSON bodies
+app.use(securityMiddleware); // custom security checks
+app.use(globalLimiter); // global rate limiter
 
-// Mount auth routes at /api/auth
-app.use("/api/auth", authRoute);
+// --- Routes ---
+app.use("/api/scan", scanRoute);
+app.use("/api/chat", chatRoute);
+app.use("/api/spam", spamRoute);
+app.use("/api/contact", contactRoute);
+app.use("/api/auth", authLimiter, authRoute); // stricter limit on auth
 
-// ✅ Status check route
-app.get("/api/status", (req, res) => {
-    res.json({ message: "Server is alive!" });
+// --- Health check ---
+app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-const PORT = process.env.PORT || 3000;
+// --- 404 Handler ---
+app.use((req, res) => {
+    res.status(404).json({ error: "Not Found", path: req.path });
+});
+
+// --- Error Handler ---
+app.use((err, req, res, next) => {
+    console.error("server-error", err);
+    res.status(err.status || 500).json({ error: err.message || "Server error" });
+});
+
+// --- Server ---
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`API listening on http://localhost:${PORT} (env=${process.env.NODE_ENV || "development"})`);
 });
-
-export default app;
