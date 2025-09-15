@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 async function connectDB() {
     try {
-        const uri =
-            "mongodb+srv://<username>:<password>@cluster0.xyz.mongodb.net/smishingDB?retryWrites=true&w=majority";
+        const uri = process.env.MONGO_URI; // using ENV variable instead of hardcoding
         await mongoose.connect(uri, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
