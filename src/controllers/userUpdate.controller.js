@@ -14,6 +14,50 @@ export const getProfile = async (req, res) => {
     res.json(user);
 };
 
+// POST /preview
+export const previewUpdate = async (req, res) => {
+    const { fullName, phoneNumber, email } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    let errors = [];
+
+    // Validate phone number
+    if (phoneNumber) {
+        if (!/^\d+$/.test(phoneNumber)) {
+            errors.push("Phone number must contain digits only (no spaces or special characters).");
+        }
+    }
+
+    // Validate email
+    if (email) {
+        if (/\s/.test(email)) {
+            errors.push("Email must not contain spaces.");
+        }
+        if (!emailRegex.test(email)) {
+            errors.push("Invalid email format.");
+        }
+    }
+
+    // If any validation errors exist, return them all
+    if (errors.length > 0) {
+        return res.status(400).json({ message: "Validation failed", errors });
+    }
+
+    // If no errors, build preview object
+    const previewUser = {
+        fullName: fullName || user.fullName,
+        phoneNumber: phoneNumber || user.phoneNumber,
+        email: email || user.email,
+    };
+
+    res.json({
+        message: "Preview of your profile after updating:",
+        preview: previewUser,
+    });
+};
+
 // PUT /update
 export const updateProfile = async (req, res) => {
     const { fullName, phoneNumber, email, password } = req.body;
