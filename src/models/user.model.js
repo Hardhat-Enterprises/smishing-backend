@@ -24,6 +24,14 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        failedUpdateAttempts: {
+            type: Number,
+            default: 0,
+        },
+        lastFailedUpdateAttempt: {
+            type: Date,
+            default: new Date(0),
+        },
     },
     { timestamps: true },
 );
