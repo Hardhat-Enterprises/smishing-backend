@@ -1,4 +1,7 @@
 import User from "../models/user.model.js";
+import { comparePassword } from "../utils/token.util.js";
+
+const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
 // GET /me
 export const getProfile = async (req, res) => {
@@ -13,23 +16,73 @@ export const getProfile = async (req, res) => {
 
 // PUT /update
 export const updateProfile = async (req, res) => {
-    const { fullName, phoneNumber, email } = req.body;
+    const { fullName, phoneNumber, email, password } = req.body;
     const user = await User.findById(req.user.id);
 
-    // Checks for parameter in body field
-    if (!user) {
-        return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Initialize tracking fields if missing
+    if (!user.failedUpdateAttempts) user.failedUpdateAttempts = 0;
+    if (!user.lastFailedUpdateAttempt) user.lastFailedUpdateAttempt = new Date(0);
+
+    // Reset attempts if >24h
+    const now = new Date();
+    const minutesSinceLastAttempt = (now - user.lastFailedUpdateAttempt) / (1000 * 60);
+    if (minutesSinceLastAttempt >= 15) {
+        user.failedUpdateAttempts = 0;
     }
 
-    if (fullName) {
-        user.fullName = fullName;
+    // Check if locked out
+    if (user.failedUpdateAttempts >= 3) {
+        return res.status(403).json({
+            message: "Too many failed attempts. Please try again after 24 hours.",
+        });
     }
+
+    // Require password
+    if (!password) {
+        return res.status(400).json({ message: "Password is required to update profile." });
+    }
+
+    const isMatch = await comparePassword(password, user.passwordHash);
+    if (!isMatch) {
+        user.failedUpdateAttempts += 1;
+        user.lastFailedUpdateAttempt = new Date();
+        await user.save();
+
+        return res.status(401).json({
+            success: false,
+            message: "Invalid password.",
+            attemptsLeft: 3 - user.failedUpdateAttempts,
+        });
+    }
+
+    // Password correct → reset attempts
+    user.failedUpdateAttempts = 0;
+    user.lastFailedUpdateAttempt = null;
+
+    // Update fields with validation
+    if (fullName) user.fullName = fullName;
 
     if (phoneNumber) {
+        if (!/^\d+$/.test(phoneNumber)) {
+            return res
+                .status(400)
+                .json({ message: "Phone number must contain digits only (no spaces or special characters)." });
+        }
+        if (phoneNumber === user.phoneNumber) {
+            return res.status(400).json({ message: "New phone number must be different from the current one." });
+        }
         user.phoneNumber = phoneNumber;
     }
 
     if (email) {
+        if (/\s/.test(email)) {
+            return res.status(400).json({ message: "Email must not contain spaces." });
+        }
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: "Invalid email format." });
+        }
         user.email = email;
     }
 
