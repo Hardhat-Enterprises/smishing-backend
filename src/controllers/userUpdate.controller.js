@@ -176,3 +176,30 @@ export const reactivateAccount = async (req, res) => {
         res.status(500).json({ message: "Error reactivating account" });
     }
 };
+
+// DELETE /
+export const deleteAccount = async (req, res) => {
+    const { password } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+        return res.status(401).json({ message: "User not found" });
+    }
+
+    const isMatch = await comparePassword(password, user.passwordHash);
+    if (!isMatch) {
+        return res.status(404).json({ message: "Invalid password, unable to delete account" });
+    }
+
+    try {
+        // Delete all contacts related to user
+        await Contact.deleteMany({ user: req.user.id });
+
+        // Delete account
+        await User.findByIdAndDelete(req.user.id);
+
+        res.status(200).json({ message: "Account successfully deleted" });
+    } catch (error) {
+        res.status(500).json({ message: "An unexpected error occurred, cannot delete account" });
+    }
+};

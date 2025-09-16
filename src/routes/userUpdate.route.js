@@ -22,4 +22,7 @@ router.patch("/deactivate", authMiddleware, deactivateAccount);
 // PATCH /reactivate
 router.patch("/reactivate", authMiddleware, reactivateAccount);
 
+// DELETE /delete
+router.delete("/delete", deleteAccount);
+
 export default router;
