@@ -1,5 +1,12 @@
 import express from "express";
-import { getProfile, previewUpdate, updateProfile } from "../controllers/userUpdate.controller.js";
+import {
+    getProfile,
+    previewUpdate,
+    updateProfile,
+    deactivateAccount,
+    reactivateAccount,
+    deleteAccount,
+} from "../controllers/userUpdate.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();

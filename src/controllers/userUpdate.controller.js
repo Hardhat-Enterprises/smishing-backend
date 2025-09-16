@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import { comparePassword } from "../utils/token.util.js";
+import Contact from "../models/contact.model.js";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
@@ -195,7 +196,7 @@ export const deleteAccount = async (req, res) => {
         // Delete all contacts related to user
         await Contact.deleteMany({ user: req.user.id });
 
-        // Delete account
+        // Delete user's account
         await User.findByIdAndDelete(req.user.id);
 
         res.status(200).json({ message: "Account successfully deleted" });
