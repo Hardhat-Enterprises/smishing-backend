@@ -48,6 +48,9 @@ app.use("/api/detections", detectionsRoute);
 // Mount update routes at /api/user
 app.use("/api/userUpdate", userRoute);
 
+// Apply error handler
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
