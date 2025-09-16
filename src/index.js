@@ -2,11 +2,14 @@ import "dotenv/config";
 import express from "express";
 import connectDB from "./configs/db.config.js";
 import authRoute from "./routes/auth.route.js";
+import detectionsRoute from "./routes/detections.route.js";
 import scanRoutes from "./routes/scan.route.js";
 import spamRoute from "./routes/spam.route.js";
 import contactRoute from "./routes/contact.route.js";
 import securityMiddleware from "./middlewares/security.middleware.js";
-import { apiLimiter, authLimiter } from "./middlewares/rateLimiter.middleware.js";
+import { apiLimiter, authLimiter } from "./middlewares/RateLimiter.middleware.js";
+import whoisRoutes from "./routes/whois.route.js";
+
 import userRoute from "./routes/userUpdate.route.js";
 
 // calling body-parser to handle the Request Object from POST requests
@@ -23,10 +26,12 @@ app.use(apiLimiter);
 // Parse incoming JSON requests
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Connect to MongoDB
 connectDB();
 
+app.use("/whois", whoisRoutes);
 // Mount auth routes at /api/auth
 app.use("/api/auth", authLimiter, authRoute);
 
@@ -39,10 +44,13 @@ app.use("/api", scanRoutes);
 // Mount spam routes at /api/spam
 app.use("/api/spam", spamRoute);
 
+app.use("/api/detections", detectionsRoute);
+
 // Mount update routes at /api/user
 app.use("/api/userUpdate", userRoute);
 
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
