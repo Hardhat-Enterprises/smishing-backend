@@ -8,6 +8,7 @@ import spamRoute from "./routes/spam.route.js";
 import contactRoute from "./routes/contact.route.js";
 import securityMiddleware from "./middlewares/security.middleware.js";
 import { apiLimiter, authLimiter } from "./middlewares/RateLimiter.middleware.js";
+import { errorHandler } from "./middlewares/ErrorHandler.middleware.js";
 import whoisRoutes from "./routes/whois.route.js";
 import userRoute from "./routes/userUpdate.route.js";
 
