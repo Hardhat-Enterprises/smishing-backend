@@ -16,4 +16,10 @@ router.post("/preview", previewUpdate);
 // PUT /update
 router.put("/update", updateProfile);
 
+// PATCH /deactivate
+router.patch("/deactivate", authMiddleware, deactivateAccount);
+
+// PATCH /reactivate
+router.patch("/reactivate", authMiddleware, reactivateAccount);
+
 export default router;
