@@ -1,10 +1,13 @@
 import express from "express";
+
 import { signup, verifyemail, login, forgotpassword, resetpassword } from "../controllers/auth.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { changePassword } from "../controllers/auth.controller.js";
 
-const router = express.Router();
+import {loginWithPin} from "../controllers/auth.controller.js";
 
+
+const router = express.Router();
 // POST /signup
 router.post("/signup", signup);
 
@@ -13,6 +16,9 @@ router.post("/verify-email", verifyemail);
 
 // POST /login
 router.post("/login", login);
+
+// POST /forgot-pin
+router.post("/login-pin", loginWithPin);
 
 // POST /forgot-password
 router.post("/forgot-password", forgotpassword);
