@@ -72,7 +72,6 @@ export const signup = async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal server error." });
     }
 };
-console.log("VERIFY REQUEST BODY:", req.body);
 /**
  * POST /api/auth/verify-email
  */
