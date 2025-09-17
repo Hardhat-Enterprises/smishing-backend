@@ -9,7 +9,7 @@ import contactRoute from "./routes/contact.route.js";
 import securityMiddleware from "./middlewares/security.middleware.js";
 import { apiLimiter, authLimiter } from "./middlewares/RateLimiter.middleware.js";
 import whoisRoutes from "./routes/whois.route.js";
-
+import faqRoute from "./routes/faq.route.js";
 
 // calling body-parser to handle the Request Object from POST requests
 import bodyParser from "body-parser";
@@ -27,25 +27,21 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Connect to MongoDB
-connectDB();
+(await connectDB?.()) ?? connectDB(); // use await if your connectDB returns a promise
 
+// Mount routes
 app.use("/whois", whoisRoutes);
-// Mount auth routes at /api/auth
 app.use("/api/auth", authLimiter, authRoute);
-
-// Mount contact routes at /api/contact
 app.use("/api/contact", contactRoute);
-
-// Mount scan routes at /api/scan
-app.use("/api", scanRoutes);
-
-// Mount spam routes at /api/spam
+app.use("/api/scan", scanRoutes);
 app.use("/api/spam", spamRoute);
-
 app.use("/api/detections", detectionsRoute);
 
-const PORT = process.env.PORT || 3000
+// FAQ routes
+app.use("/api/faq", faqRoute);
+app.use("/api/faqs", faqRoute);
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
