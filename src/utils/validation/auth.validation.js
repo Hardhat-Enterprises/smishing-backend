@@ -10,7 +10,7 @@ export const validate = (schema) => (req, res, next) => {
             return res.status(422).json({
                 success: false,
                 message: "Invalid request.",
-                errors: err.errors.map((e) => ({
+                errors: err.issues.map((e) => ({
                     path: e.path.join("."),
                     message: e.message,
                 })),

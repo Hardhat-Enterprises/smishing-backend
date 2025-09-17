@@ -99,8 +99,6 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(401).json({
