@@ -39,7 +39,6 @@ app.use("/api/detections", detectionsRoute);
 
 // FAQ routes
 app.use("/api/faq", faqRoute);
-app.use("/api/faqs", faqRoute);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
