@@ -3,6 +3,13 @@ import User from "../models/user.model.js";
 import { generateOtp, verifyOtp } from "../utils/otp.util.js";
 import { hashPassword, comparePassword, generateToken } from "../utils/token.util.js";
 import { sendEmail } from "../services/email.service.js";
+import LoginActivity from "../models/loginActivity.model.js";
+import { getClientIP } from "../utils/ip.js";
+import { isNewIPOrDevice, userAgentLabel } from "../utils/securitySignals.js";
+import bcrypt from "bcrypt";
+
+const LOCKOUT_THRESHOLD = Number(process.env.LOCKOUT_THRESHOLD || 5);
+const LOCKOUT_MINUTES = Number(process.env.LOCKOUT_MINUTES || 15);
 
 /**
  * POST /api/auth/signup
@@ -117,8 +124,8 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
-        const now = new Date();
-        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+        const now1 = new Date();
+        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now1) {
             return res.status(429).json({
                 success: false,
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
@@ -131,8 +138,41 @@ export const login = async (req, res) => {
             });
         }
 
+        // --- NEW: get client IP/UA and check lockout ---
+        const ip = getClientIP(req);
+        const ua = req.get("user-agent") || "";
+        const now = new Date();
+
+        if (user?.security?.lockUntil && user.security.lockUntil > now) {
+            await LoginActivity.create({ userId: user._id, ip, userAgent: ua, success: false });
+            return res.status(423).json({
+                success: false,
+                message: "Account locked. Try again later.",
+            });
+        }
+
+        /*const isMatch = await comparePassword(password, user.passwordHash);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials.",
+            });
+        }
+*/
         const isMatch = await comparePassword(password, user.passwordHash);
         if (!isMatch) {
+            // increment failure count + maybe lock
+            user.security = user.security || {};
+            user.security.failedLogins = (user.security.failedLogins || 0) + 1;
+
+            if (user.security.failedLogins >= LOCKOUT_THRESHOLD) {
+                user.security.lockUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000);
+                user.security.failedLogins = 0; // reset after locking
+            }
+
+            await user.save();
+            await LoginActivity.create({ userId: user._id, ip, userAgent: ua, success: false });
+
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials.",
@@ -145,6 +185,50 @@ export const login = async (req, res) => {
                 message: "Please verify your email before logging in.",
             });
         }
+        // --- NEW: success path bookkeeping ---
+        // reset counters
+        user.security = user.security || {};
+        user.security.failedLogins = 0;
+        user.security.lockUntil = null;
+
+        // record success activity
+        await LoginActivity.create({
+            userId: user._id,
+            ip,
+            userAgent: ua,
+            success: true,
+            factorsUsed: ["password"],
+        });
+
+        // send alert on new IP/device (non-blocking)
+        const { changed } = isNewIPOrDevice(user, ip, ua);
+        if (changed && (user.security.loginAlerts ?? true)) {
+            const uaLabel = userAgentLabel(ua);
+            const body = `We noticed a new login to your account.
+
+         Time:   ${new Date().toISOString()}
+         IP:     ${ip}
+         Device: ${uaLabel}
+
+         If this wasn't you, please reset your password immediately.`;
+
+            // fire & forget; don’t block login
+            sendEmail(user.email, body)
+                .then(async () => {
+                    await LoginActivity.updateOne(
+                        { userId: user._id, ip, userAgent: ua, success: true },
+                        { $set: { alerted: true } },
+                        { sort: { at: -1 } },
+                    );
+                })
+                .catch(() => {});
+        }
+
+        // update baseline for next time
+        user.security.lastLoginAt = new Date();
+        user.security.lastLoginIP = ip;
+        user.security.lastLoginUA = ua;
+        await user.save();
 
         const token = generateToken({ userId: user._id });
 
@@ -314,5 +398,64 @@ export const resetpassword = async (req, res) => {
             success: false,
             message: "Internal server error.",
         });
+    }
+};
+
+/**
+ * POST /api/auth/change-password
+ * Body: { currentPassword, newPassword, confirmNewPassword }
+ * Auth: Required (Bearer token via authMiddleware)
+ */
+export const changePassword = async (req, res) => {
+    try {
+        const userId = req.user?.id; // set by authMiddleware
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthenticated" });
+        }
+
+        const { currentPassword, newPassword, confirmNewPassword } = req.body || {};
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+        if (newPassword !== confirmNewPassword) {
+            return res.status(400).json({ success: false, message: "Passwords do not match" });
+        }
+
+        const user = await User.findById(userId).select("+passwordHash +tokenVersion +email");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // verify current password
+        const ok = await bcrypt.compare(currentPassword, user.passwordHash);
+        if (!ok) {
+            return res.status(400).json({ success: false, message: "Current password is incorrect" });
+        }
+
+        // block reusing the same password
+        const sameAsOld = await bcrypt.compare(newPassword, user.passwordHash);
+        if (sameAsOld) {
+            return res.status(400).json({
+                success: false,
+                message: "New password must be different from current password",
+            });
+        }
+
+        // hash new password
+        const cost = 12; // tune to ~200–300ms on your server
+        user.passwordHash = await bcrypt.hash(newPassword, cost);
+
+        // invalidate existing sessions/refresh tokens if you use them
+        user.tokenVersion = (user.tokenVersion || 0) + 1;
+        user.passwordUpdatedAt = new Date();
+
+        await user.save();
+
+        // Optional: send security email / log event here
+
+        return res.status(200).json({ success: true, message: "Password changed. Please sign in again." });
+    } catch (err) {
+        console.error("changePassword error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
