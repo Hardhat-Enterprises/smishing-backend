@@ -14,27 +14,29 @@ import express from "express";
 import connectDB from "./configs/db.config.js";
 
 // -------------------------------
-//  Feature routes
+//  Feature routes (existing)
 // -------------------------------
 import authRoute from "./routes/auth.route.js";
 import scanRoutes from "./routes/scan.route.js";
 import spamRoute from "./routes/spam.route.js";
 import contactRoute from "./routes/contact.route.js";
 import healthRoute from "./routes/health.route.js";
+// from the other branch
+import userRoute from "./routes/userUpdate.route.js";
 
 // -------------------------------
-//  Middlewares
+//  Middlewares (existing)
 // -------------------------------
 import securityMiddleware from "./middlewares/security.middleware.js";
 import { apiLimiter, authLimiter } from "./middlewares/rateLimiter.middleware.js";
 
 // -------------------------------
-//  Models
+//  Models (used by /api/reports)
 // -------------------------------
 import Report from "./models/report.model.js";
 
 // -------------------------------
-//  ⭐ ML client (FastAPI @ 8000)
+//  ML client (FastAPI @ 8000)
 // -------------------------------
 import { classifyMessage, fallbackClassify } from "./services/ml.service.js";
 
@@ -57,13 +59,14 @@ app.use(express.urlencoded({ extended: true }));
 connectDB();
 
 /* ====================================================================== */
-/* 3) ROUTE MOUNTING                                                      */
+/* 3) ROUTE MOUNTING (existing + userUpdate)                              */
 /* ====================================================================== */
 app.use("/api/auth", authLimiter, authRoute);
 app.use("/api/contact", contactRoute);
 app.use("/api", scanRoutes);
 app.use("/api/spam", spamRoute);
 app.use("/health", healthRoute);
+app.use("/api/userUpdate", userRoute);
 
 /* ====================================================================== */
 /* 4) DEV ECHO (optional)                                                 */
@@ -243,7 +246,6 @@ app.post("/api/reports", async (req, res) => {
     const url = String(req.body?.url || "");
     const sourceRaw = String(req.body?.source || "android").trim();
 
-    // Only message is required
     if (!messageText) {
       return res
         .status(400)
@@ -252,27 +254,20 @@ app.post("/api/reports", async (req, res) => {
 
     const source = ["android", "web", "test"].includes(sourceRaw) ? sourceRaw : "android";
 
-    // Heuristic analysis (for transparency in UI/logs)
     const analysis = quickHeuristics(messageText);
 
-    // ⭐ Call FastAPI ML
     const ml = await classifyMessage(messageText);
     if (!ml.ok) console.warn("[ML] Using fallback classifier:", ml.error);
     const baseClassification = ml.ok ? ml.data : fallbackClassify(messageText);
 
-    // Normalize to {label,badge,confidence,probabilities,...}
     const normalized = normalizeClassification(baseClassification);
-
-    // 🔒 Apply guardrails using the raw text
     const guarded = applyGuardrails(normalized, messageText);
 
-    // Human-readable advice + suggested actions
     const { advice, actions } = buildAdvice(guarded, /(http|https):\/\//i.test(messageText));
     const classification = { ...guarded, advice, actions };
 
-    // Save to MongoDB
     const doc = await Report.create({
-      phoneNumber: phoneNumber || undefined, // omit when blank
+      phoneNumber: phoneNumber || undefined,
       messageText,
       source,
       metadata: req.body?.metadata || {},

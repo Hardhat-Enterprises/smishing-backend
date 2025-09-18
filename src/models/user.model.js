@@ -25,6 +25,18 @@ const userSchema = new mongoose.Schema(
             default: false,
         },
 
+        failedUpdateAttempts: {
+            type: Number,
+            default: 0,
+        },
+        lastFailedUpdateAttempt: {
+            type: Date,
+            default: new Date(0),
+        },
+        isActive: {
+            type: Boolean,
+            default: true,
+
         loginAttempts: {
             count: { type: Number, default: 0 },
             lockUntil: { type: Date, default: null },
