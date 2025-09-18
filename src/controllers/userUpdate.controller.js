@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import { comparePassword } from "../utils/token.util.js";
+import Contact from "../models/contact.model.js";
 
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
@@ -148,7 +149,11 @@ export const deactivateAccount = async (req, res) => {
         user.isActive = false;
         await user.save();
 
-        res.status(200).json({ message: "Account has been deactivated" });
+        res.status(200).json({
+            message:
+                "Account has been deactivated. In case of emergency, " +
+                "please reset password quickly, then reactivate account",
+        });
     } catch (error) {
         res.status(500).json({ message: "Error deactivating account" });
     }
@@ -166,6 +171,16 @@ export const reactivateAccount = async (req, res) => {
 
         if (user.isActive) {
             return res.status(400).json({ message: "Account is not deactivated" });
+        }
+
+        const { password } = req.body;
+        if (!password) {
+            return res.status(400).json({ message: "Missing password, please include password" });
+        }
+
+        const isMatch = await comparePassword(password, user.passwordHash);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid password" });
         }
 
         user.isActive = true;

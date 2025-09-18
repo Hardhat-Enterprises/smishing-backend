@@ -1,5 +1,12 @@
 import express from "express";
-import { getProfile, previewUpdate, updateProfile } from "../controllers/userUpdate.controller.js";
+import {
+    getProfile,
+    previewUpdate,
+    updateProfile,
+    deactivateAccount,
+    reactivateAccount,
+    deleteAccount,
+} from "../controllers/userUpdate.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -17,10 +24,10 @@ router.post("/preview", previewUpdate);
 router.put("/update", updateProfile);
 
 // PATCH /deactivate
-router.patch("/deactivate", authMiddleware, deactivateAccount);
+router.patch("/deactivate", deactivateAccount);
 
 // PATCH /reactivate
-router.patch("/reactivate", authMiddleware, reactivateAccount);
+router.patch("/reactivate", reactivateAccount);
 
 // DELETE /delete
 router.delete("/delete", deleteAccount);
