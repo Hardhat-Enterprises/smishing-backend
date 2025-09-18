@@ -158,8 +158,8 @@ export const login = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
-        const now = new Date();
-        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+        const now1 = new Date();
+        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now1) {
             return res.status(429).json({
                 success: false,
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,

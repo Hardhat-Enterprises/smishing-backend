@@ -25,7 +25,6 @@ const userSchema = new mongoose.Schema(
             default: false,
         },
 
-
         tokenVersion: {
             type: Number,
             default: 0,
@@ -44,7 +43,7 @@ const userSchema = new mongoose.Schema(
             lastLoginUA: { type: String, default: "" },
             tokenVersion: { type: Number, default: 0, select: true },
             passwordUpdatedAt: { type: Date },
-
+        },
 
         failedUpdateAttempts: {
             type: Number,
@@ -57,12 +56,11 @@ const userSchema = new mongoose.Schema(
         isActive: {
             type: Boolean,
             default: true,
-
+        },
 
         loginAttempts: {
             count: { type: Number, default: 0 },
             lockUntil: { type: Date, default: null },
-
         },
     },
     { timestamps: true },

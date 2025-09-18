@@ -8,7 +8,7 @@ import scanRoutes from "./routes/scan.route.js";
 import spamRoute from "./routes/spam.route.js";
 import contactRoute from "./routes/contact.route.js";
 import securityMiddleware from "./middlewares/security.middleware.js";
-import { apiLimiter, authLimiter } from "./middlewares/rateLimiter.middleware.js";
+import { apiLimiter, authLimiter } from "./middlewares/RateLimiter.middleware.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
 import cors from "cors";
 import whoisRoutes from "./routes/whois.route.js";
@@ -56,16 +56,12 @@ app.use("/api", scanRoutes);
 // Mount spam routes at /api/spam
 app.use("/api/spam", spamRoute);
 
-
 app.use("/api/detections", detectionsRoute);
-
-
 
 // Mount update routes at /api/user
 app.use("/api/userUpdate", userRoute);
 
 const PORT = process.env.PORT || 3000;
-
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
