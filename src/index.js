@@ -13,6 +13,7 @@ import feedbackRoutes from "./routes/feedbackRoutes.js";
 import cors from "cors";
 import whoisRoutes from "./routes/whois.route.js";
 
+import userRoute from "./routes/userUpdate.route.js";
 
 // calling body-parser to handle the Request Object from POST requests
 import bodyParser from "body-parser";
@@ -36,6 +37,7 @@ app.use(apiLimiter);
 // Parse incoming JSON requests
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Connect to MongoDB
 connectDB();
@@ -56,6 +58,11 @@ app.use("/api/spam", spamRoute);
 
 
 app.use("/api/detections", detectionsRoute);
+
+
+
+// Mount update routes at /api/user
+app.use("/api/userUpdate", userRoute);
 
 const PORT = process.env.PORT || 3000;
 
