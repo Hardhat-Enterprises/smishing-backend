@@ -9,7 +9,6 @@ import contactRoute from "./routes/contact.route.js";
 import securityMiddleware from "./middlewares/security.middleware.js";
 import { apiLimiter, authLimiter } from "./middlewares/RateLimiter.middleware.js";
 import whoisRoutes from "./routes/whois.route.js";
-
 import userRoute from "./routes/userUpdate.route.js";
 
 // calling body-parser to handle the Request Object from POST requests
@@ -25,7 +24,6 @@ app.use(apiLimiter);
 
 // Parse incoming JSON requests
 app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Connect to MongoDB

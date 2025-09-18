@@ -11,24 +11,12 @@ export const signup = async (req, res) => {
     try {
         const { fullName, phoneNumber, email, password, pin } = req.body;
 
-        if (!fullName || !phoneNumber || !email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields (fullName, phoneNumber, email, password) are required.",
-            });
-        }
-
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(409).json({
                 success: false,
                 message: "Unable to register. Please try again.",
             });
-        }
-
-        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-        if (!emailRegex.test(email)) {
-            return res.status(422).json({ success: false, message: "Invalid email format." });
         }
 
         // optional 6 digit PIN
@@ -79,13 +67,6 @@ export const verifyemail = async (req, res) => {
     try {
         const { email, otp } = req.body;
 
-        if (!email || !otp) {
-            return res.status(400).json({
-                success: false,
-                message: "Email and OTP required.",
-            });
-        }
-
         const user = await User.findOne({ email });
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
@@ -135,21 +116,6 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Email and password are required.",
-            });
-        }
-
-        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-        if (!emailRegex.test(email)) {
-            return res.status(422).json({
-                success: false,
-                message: "Invalid email format.",
-            });
-        }
-
         const user = await User.findOne({ email });
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
@@ -193,6 +159,7 @@ export const login = async (req, res) => {
             token,
         });
     } catch (error) {
+        console.error("login error", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error.",
@@ -252,13 +219,6 @@ export const forgotpassword = async (req, res) => {
     try {
         const { email } = req.body;
 
-        if (!email) {
-            return res.status(400).json({
-                success: false,
-                message: "Please enter a valid email",
-            });
-        }
-
         const user = await User.findOne({ email });
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
@@ -294,6 +254,7 @@ export const forgotpassword = async (req, res) => {
             message: "OTP sent to email for password reset",
         });
     } catch (error) {
+        console.error("forgotpassword errpr", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error.",
@@ -307,13 +268,6 @@ export const forgotpassword = async (req, res) => {
 export const resetpassword = async (req, res) => {
     try {
         const { email, newPassword, otp } = req.body;
-
-        if (!email || !newPassword || !otp) {
-            return res.status(400).json({
-                success: false,
-                message: "Email, new password, and OTP are required",
-            });
-        }
 
         const user = await User.findOne({ email });
         const now = new Date();
@@ -355,6 +309,7 @@ export const resetpassword = async (req, res) => {
             message: "Password reset successful. You can now log in with your new password.",
         });
     } catch (error) {
+        console.error("resetpassword error", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error.",
