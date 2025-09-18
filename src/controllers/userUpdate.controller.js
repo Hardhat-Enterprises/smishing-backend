@@ -210,7 +210,7 @@ export const deleteAccount = async (req, res) => {
         // Delete all contacts related to user
         await Contact.deleteMany({ user: req.user.id });
 
-        // Delete account
+        // Delete user's account
         await User.findByIdAndDelete(req.user.id);
 
         res.status(200).json({ message: "Account successfully deleted" });
