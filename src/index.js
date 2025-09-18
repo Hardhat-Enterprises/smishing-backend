@@ -25,7 +25,7 @@ import healthRoute from "./routes/health.route.js";
 import userRoute from "./routes/userUpdate.route.js";
 
 // -------------------------------
-//  Middlewares (existing)
+//  Middlewares 
 // -------------------------------
 import securityMiddleware from "./middlewares/security.middleware.js";
 import { apiLimiter, authLimiter } from "./middlewares/rateLimiter.middleware.js";
@@ -34,6 +34,8 @@ import { apiLimiter, authLimiter } from "./middlewares/rateLimiter.middleware.js
 //  Models (used by /api/reports)
 // -------------------------------
 import Report from "./models/report.model.js";
+import whoisRoutes from "./routes/whois.route.js";
+import userRoute from "./routes/userUpdate.route.js";
 
 // -------------------------------
 //  ML client (FastAPI @ 8000)
@@ -53,9 +55,6 @@ app.use(apiLimiter);
 app.use(express.json({ limit: "200kb" }));
 app.use(express.urlencoded({ extended: true }));
 
-/* ====================================================================== */
-/* 2) DATABASE CONNECTION                                                 */
-/* ====================================================================== */
 connectDB();
 
 /* ====================================================================== */
