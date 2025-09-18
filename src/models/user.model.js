@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+
         failedUpdateAttempts: {
             type: Number,
             default: 0,
@@ -35,6 +36,10 @@ const userSchema = new mongoose.Schema(
         isActive: {
             type: Boolean,
             default: true,
+
+        loginAttempts: {
+            count: { type: Number, default: 0 },
+            lockUntil: { type: Date, default: null },
         },
     },
     { timestamps: true },
