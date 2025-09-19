@@ -29,6 +29,7 @@ import userRoute from "./routes/userUpdate.route.js";
 // -------------------------------
 import securityMiddleware from "./middlewares/security.middleware.js";
 import { apiLimiter, authLimiter } from "./middlewares/RateLimiter.middleware.js";
+import { errorHandler } from "./middlewares/ErrorHandler.middleware.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
 import cors from "cors";
 
@@ -37,7 +38,7 @@ import cors from "cors";
 // -------------------------------
 import Report from "./models/report.model.js";
 import whoisRoutes from "./routes/whois.route.js";
-import userRoute from "./routes/userUpdate.route.js";
+
 
 // -------------------------------
 //  ML client (FastAPI @ 8000)
@@ -48,6 +49,7 @@ import { classifyMessage, fallbackClassify } from "./services/ml.service.js";
 //  App
 // -------------------------------
 const app = express();
+
 app.use(express.json());
 app.use(cors());
 // So req.ip is real when behind nginx/Cloudflare/Render/etc.
@@ -66,6 +68,10 @@ app.use(apiLimiter);
 app.use(express.json({ limit: "200kb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// Apply error handler
+app.use(errorHandler);
+
+// Connect to MongoDB
 connectDB();
 
 /* ====================================================================== */
@@ -165,6 +171,7 @@ function normalizeClassification(ml = {}) {
     label = mapText(toStr(entries[0][0]));
   }
   if (!label) label = "spam";
+
 
   let confidence = Number(ml.confidence ?? 0);
   if (confidence > 1) confidence = confidence / 100;

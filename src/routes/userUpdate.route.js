@@ -24,10 +24,10 @@ router.post("/preview", previewUpdate);
 router.put("/update", updateProfile);
 
 // PATCH /deactivate
-router.patch("/deactivate", authMiddleware, deactivateAccount);
+router.patch("/deactivate", deactivateAccount);
 
 // PATCH /reactivate
-router.patch("/reactivate", authMiddleware, reactivateAccount);
+router.patch("/reactivate", reactivateAccount);
 
 // DELETE /delete
 router.delete("/delete", deleteAccount);
