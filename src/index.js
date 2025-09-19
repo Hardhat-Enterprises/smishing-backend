@@ -25,6 +25,7 @@ import userRoute from "./routes/userUpdate.route.js";
 import detectionsRoute from "./routes/detections.route.js";
 import whoisRoutes from "./routes/whois.route.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
+import faqRoute from "./routes/faq.route.js";   // ✅ Added FAQ
 
 // -------------------------------
 //  Middlewares 
@@ -66,14 +67,15 @@ connectDB();
 /* ====================================================================== */
 /* 2) ROUTE MOUNTING                                                      */
 /* ====================================================================== */
-app.use("/whois", whoisRoutes);
+app.use("/api/whois", whoisRoutes);        // ✅ Made consistent
 app.use("/api/auth", authLimiter, authRoute);
 app.use("/api/contact", contactRoute);
 app.use("/api/scan", scanRoutes);
 app.use("/api/spam", spamRoute);
 app.use("/api/detections", detectionsRoute);
-app.use("/health", healthRoute);
+app.use("/api/health", healthRoute);       // ✅ Made consistent
 app.use("/api/userUpdate", userRoute);
+app.use("/api/faq", faqRoute);             // ✅ Added FAQ
 
 /* ====================================================================== */
 /* 3) SERVER BOOT                                                         */
