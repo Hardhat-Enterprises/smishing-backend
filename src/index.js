@@ -38,7 +38,7 @@ import cors from "cors";
 // -------------------------------
 import Report from "./models/report.model.js";
 import whoisRoutes from "./routes/whois.route.js";
-import userRoute from "./routes/userUpdate.route.js";
+
 
 // -------------------------------
 //  ML client (FastAPI @ 8000)
@@ -49,7 +49,6 @@ import { classifyMessage, fallbackClassify } from "./services/ml.service.js";
 //  App
 // -------------------------------
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
@@ -68,9 +67,6 @@ app.use("/api", feedbackRoutes);
 app.use(apiLimiter);
 app.use(express.json({ limit: "200kb" }));
 app.use(express.urlencoded({ extended: true }));
-
-// Parse incoming JSON requests
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // Apply error handler
 app.use(errorHandler);
