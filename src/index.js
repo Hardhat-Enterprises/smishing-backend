@@ -5,11 +5,12 @@ import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 
+import connectDB from "./configs/db.config.js";
+
+// --- Middlewares ---
 import securityMiddleware from "./middlewares/security.middleware.js";
 import { apiLimiter, authLimiter } from "./middlewares/RateLimiter.middleware.js";
 import { errorHandler } from "./middlewares/ErrorHandler.middleware.js";
-
-import connectDB from "./configs/db.config.js";
 
 // --- Routes ---
 import authRoute from "./routes/auth.route.js";
@@ -60,9 +61,10 @@ app.use("/health", healthRoute);
 // --- Reports (ML classification + advice) ---
 app.post("/api/reports", async (req, res) => {
   try {
+    console.log("Report received:", req.body);
+
     const phoneNumber = String(req.body?.phoneNumber || "").trim();
     const messageText = String(req.body?.messageText || req.body?.messageContent || "").trim();
-    const url = String(req.body?.url || "");
     const sourceRaw = String(req.body?.source || "android").trim();
 
     if (!messageText) {
@@ -71,31 +73,12 @@ app.post("/api/reports", async (req, res) => {
 
     const source = ["android", "web", "test"].includes(sourceRaw) ? sourceRaw : "android";
 
-    // Heuristics
-    const quickHeuristics = (text = "") => {
-      const t = text.toLowerCase();
-      const hits = [
-        /urgent|verify|locked|suspended/,
-        /(http|https):\/\//,
-        /gift|prize|win|won|lottery|reward/,
-      ].filter((r) => r.test(t)).length;
-
-      return {
-        riskScore: Math.min(20 + hits * 20, 95),
-        tags: [
-          ...(t.includes("http") ? ["has_link"] : []),
-          ...(t.match(/win|gift|prize|reward|lottery/) ? ["prize_language"] : []),
-        ],
-      };
-    };
-
     const analysis = quickHeuristics(messageText);
 
-    // ML Classification
     const ml = await classifyMessage(messageText);
+    if (!ml.ok) console.warn("[ML] Using fallback classifier:", ml.error);
     const baseClassification = ml.ok ? ml.data : fallbackClassify(messageText);
 
-    // Normalize + guardrails
     const normalized = normalizeClassification(baseClassification);
     const guarded = applyGuardrails(normalized, messageText);
 
@@ -140,8 +123,23 @@ app.listen(PORT, () => {
 export default app;
 
 /* ====================================================================== */
-/* Helpers for classification (moved here to keep index.js self-contained)*/
+/* Helpers for classification (kept self-contained in index.js)          */
 /* ====================================================================== */
+function quickHeuristics(text = "") {
+  const t = String(text || "").toLowerCase();
+  const hits = [
+    /urgent|verify|locked|suspended/,
+    /(http|https):\/\//,
+    /gift|prize|win|won|lottery|reward/,
+  ].filter((r) => r.test(t)).length;
+
+  const riskScore = Math.min(20 + hits * 20, 95);
+  const tags = [];
+  if (/http/.test(t)) tags.push("has_link");
+  if (/win|gift|prize|reward|lottery/i.test(t)) tags.push("prize_language");
+  return { riskScore, tags };
+}
+
 function normalizeClassification(ml = {}) {
   const toStr = (v) => String(v ?? "").trim().toLowerCase();
   const rawLabel = toStr(ml.label);
@@ -216,14 +214,42 @@ function buildAdvice({ label = "ham", confidence = 0.5 } = {}, hasUrl = false) {
 
 function applyGuardrails(classification, text = "") {
   const cls = { ...classification };
-  const t = text.toLowerCase();
+  const t = String(text || "").toLowerCase();
 
-  const hasUrl = /(http|https):\/\/|www\./i.test(t);
-  const acct = /(account|bank|verify|verification|locked|suspended|update|confirm)/i.test(t);
-  const secrets = /(otp|one[-\s]?time|password|pin|cvv|ssn|security code)/i.test(t);
+  const hasUrl   = /(http|https):\/\/|www\./i.test(t);
+  const winWords = /(win|won|prize|reward|gift|lottery|free|claim)/i.test(t);
+  const acct     = /(account|bank|verify|verification|locked|suspended|update|confirm)/i.test(t);
+  const secrets  = /(otp|one[-\s]?time|password|pin|cvv|ssn|security code)/i.test(t);
+  const urgent   = /(urgent|immediately|now|24\s?hrs?|today only)/i.test(t);
+  const clicky   = /(click|tap|open the link|link below)/i.test(t);
 
-  if ((hasUrl && acct) || (hasUrl && secrets)) {
-    cls.label = "smishing";
+  const p = cls.probabilities || {};
+  const pHam   = Number(p.ham ?? (cls.label === "ham" ? cls.confidence : 0));
+  const pSpam  = Number(p.spam ?? (cls.label === "spam" ? cls.confidence : 0));
+  const pSmish = Number(p.smishing ?? (cls.label === "smishing" ? cls.confidence : 0));
+
+  const setLabel = (newLabel, reason) => {
+    cls.label = newLabel;
+    cls.badge = { ham: "Safe", spam: "Spam", smishing: "Smishing" }[newLabel];
+    cls.severity = { ham: "low", spam: "medium", smishing: "high" }[newLabel];
+    if (reason) cls.rule_reason = reason;
+    if (!cls.confidence || cls.confidence > 0.98) cls.confidence = 0.85;
+  };
+
+  if ((hasUrl && (acct || secrets)) || (secrets && acct)) {
+    if (pHam < 0.95) setLabel("smishing", "rules: url+account/otp");
+  }
+
+  if (winWords || (hasUrl && clicky) || urgent) {
+    if (cls.label === "ham" && pHam < 0.90) setLabel("spam", "rules: promo/lottery/link/urgency");
+  }
+
+  if (hasUrl && (acct || clicky) && cls.label === "ham") {
+    if (pHam < 0.90 || (pSpam + pSmish) > 0.30) setLabel("spam", "rules: url+cta");
+  }
+
+  if (cls.label === "ham" && (pSpam > 0.45 || pSmish > 0.40)) {
+    setLabel(pSmish >= pSpam ? "smishing" : "spam", "rules: prob nudge");
   }
 
   return cls;
