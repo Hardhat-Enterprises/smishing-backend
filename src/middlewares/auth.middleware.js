@@ -18,6 +18,15 @@ export const authMiddleware = async (req, res, next) => {
             return res.status(401).json({ message: "User not found" });
         }
 
+        if (req.path == "/reactivate") {
+            req.user = { id: user._id.toString() };
+            return next();
+        }
+
+        if (!user.isActive) {
+            return res.status(403).json({ message: "Account is deactivated" });
+        }
+
         req.user = { id: user._id.toString() };
         next();
     } catch (error) {
