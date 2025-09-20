@@ -1,14 +1,19 @@
-// src/middlewares/security.middleware.js
+import helmet from "helmet";
 
-// Example: basic middleware for adding security headers / checks
-export default function securityMiddleware(req, res, next) {
-    // Example extra validation
-    if (req.method === "POST" && !req.is("application/json")) {
-        return res.status(415).json({ error: "Content-Type must be application/json" });
-    }
+const securityMiddleware = helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "same-site" },
+    crossOriginOpenerPolicy: { policy: "same-origin" },
+    frameguard: { action: "deny" },
+    hsts: {
+        maxAge: 31536000, // 1 year in seconds
+        includeSubDomains: true,
+        preload: true,
+    },
+    noSniff: true, // X-Content-Type-Options: nosniff
+    referrerPolicy: { policy: "no-referrer" },
+    xssFilter: true,
+    dnsPrefetchControl: { allow: false },
+});
 
-    // Custom header for all responses
-    res.setHeader("X-App-Security", "enabled");
-
-    next();
-}
+export default securityMiddleware;
