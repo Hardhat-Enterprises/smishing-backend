@@ -10,6 +10,8 @@ import securityMiddleware from "./middlewares/security.middleware.js";
 import { apiLimiter, authLimiter } from "./middlewares/RateLimiter.middleware.js";
 import whoisRoutes from "./routes/whois.route.js";
 import userRoute from "./routes/userUpdate.route.js";
+import contactUsRoute from "./routes/contactus.route.js";
+import errorHandler from "./middlewares/errorHandler.middlwares.js";
 
 // calling body-parser to handle the Request Object from POST requests
 import bodyParser from "body-parser";
@@ -52,5 +54,8 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+// Mount contact-us routes at /api/contactus
+app.use("/api/contactus", contactUsRoute);
+app.use(errorHandler);
 
 export default app;
