@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
         isActive: {
             type: Boolean,
             default: true,
-
+        },
         loginAttempts: {
             count: { type: Number, default: 0 },
             lockUntil: { type: Date, default: null },
