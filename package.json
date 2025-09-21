@@ -1,4 +1,37 @@
 {
+feature/ai-chat-api
+  "name": "smishing-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "format": "prettier --write .",
+    "test": "echo \"Error: No test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "axios": "^1.12.1",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.13.1",
+    "morgan": "^1.10.1",
+    "nodemailer": "^6.10.0"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.5.3"
+  },
+  "lint-staged": {
+    "*.{js,md}": "prettier --write"
+  }
     "name": "smishing-backend",
     "private": "true",
     "type": "module",
