@@ -1,5 +1,26 @@
 import mongoose from "mongoose";
 
+const backupCodeSchema = new mongoose.Schema(
+    {
+        code: {
+            type: String, // hashed version of the backup code
+            required: true,
+        },
+        used: {
+            type: Boolean,
+            default: false,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+        usedAt: {
+            type: Date, // optional: track when the code was used
+        },
+    },
+    { _id: false },
+);
+
 const userSchema = new mongoose.Schema(
     {
         fullName: {
@@ -61,6 +82,13 @@ const userSchema = new mongoose.Schema(
         loginAttempts: {
             count: { type: Number, default: 0 },
             lockUntil: { type: Date, default: null },
+        },
+
+        // Backup Codes Field (hidden by default)
+        backupCodes: {
+            type: [backupCodeSchema],
+            select: false,
+            default: [],
         },
     },
     { timestamps: true },
