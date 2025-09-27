@@ -1,0 +1,438 @@
+{
+    "success": true,
+    "data": [
+        {
+            "_id": "68b72278b6ca4f59eaebfdfa",
+            "title": "Jaguar Land Rover manufacturing and retail ‘severely disrupted’ by cyber incident",
+            "description": "<p>Jaguar Land Rover’s manufacturing and retailing activities have been “severely disrupted” by a cyber incident, forcing it to shut down its systems.</p> <p>Britain’s largest carmaker said there was ...",
+            "content": "<p>Jaguar Land Rover’s manufacturing and retailing activities have been “severely disrupted” by a cyber incident, forcing it to shut down its systems.</p> <p>Britain’s largest carmaker said there was no evidence that any customer data had been taken. </p> <p>“We are now working at pace to restart our global applications in a controlled manner,” JLR said in a brief statement. “At this stage there is no evidence any customer data has been stolen but our retail and production activities have been severely disrupted.”</p> <aside class=\"element element-rich-link element--thumbnail\"> <p> <span>Related: </span><a href=\"https://www.theguardian.com/business/2025/sep/01/jaguar-land-rover-electric-armoured-cars-safety-levels\">Starmer cannot have armoured electric Range Rover ‘because of bomb risk’</a> </p> </aside>  <p>JLR said it had “proactively” shut down its systems and taken “immediate action to mitigate” the impact.</p> <p>The Liverpool Echo reported that workers at the company’s Halewood plant in Merseyside were told early on Monday morning not to come into work because of the incident. </p> <p>Shares in JLR’s Indian owner, Tata Motors, fell by 0.9% in Mumbai after it informed investors of a cyber incident on Monday. JLR told its parent company that it was “working at pace to resolve global IT issues impacting our business”.</p> <p>One cybersecurity specialist said the speed of the shutdown underlined the seriousness of the threat facing JLR’s operations.</p> <p>“JLR’s decision to proactively shut down global manufacturing suggests this attack may have been targeting their operational systems, not just customer data,” said Oakley Cox, a director at the UK cybersecurity firm Darktrace. “The speed of their response is telling – you don’t typically halt production across multiple sites unless there’s genuine concern about operational impact.”</p> <p>JLR did not give more details about who was behind the cyber incident, when it was discovered or how long it would take to recover from it.</p> <p>The UK’s National Cyber Security Centre was contacted for comment. </p>    <p>In April, Marks &amp; Spencer revealed it had been the <a href=\"https://www.theguardian.com/business/2025/apr/22/marks-and-spencer-apologises-cyber-incident-contactless-payments-online-orders\">victim of a devastating cyber-attack</a> which resulted in the closure of its online store for almost seven weeks and cost it hundreds of millions of pounds.</p> <p>The Co-op was attacked in the same month and forced to shut down parts of its IT system. Both had been targeted by ransomware – which locks up a victim’s computer files – but JLR has given no indication that its incident also involves such malware.</p> <p>In May, the luxury retailer Harrods said that it had been targeted, and restricted internet access across its websites after attempts to gain unauthorised access to its system. Four people including three teenagers have been arrested at UK addresses as <a href=\"https://www.theguardian.com/uk-news/2025/jul/10/four-arrested-over-cyber-attacks-marks-and-spencer-co-op-harrods\">part of an investigation</a> into the trio of retail cyber-attacks.</p> <p>The disruption at JLR comes as it faces falling profits amid the <a href=\"https://www.theguardian.com/business/2025/aug/08/jaguar-land-rover-profits-dented-tariffs-drop-sales\">impact of US tariffs and declining sales</a>.</p> <p>The carmaker reported that underlying pre-tax profits fell by 49% to £351m in the three months to June, which included a period when the company <a href=\"https://www.theguardian.com/business/2025/apr/05/jaguar-land-rover-us-shipments-trumps-tariffs\">temporarily paused exports to the US</a>.</p> <p>A subsequent trade deal between the UK and the US cut car export tariffs from 27.5% to 10%. However, the pause contributed to a near £700m drop in revenue, down 9.2% year on year to £6.6bn.</p> <p>The incident comes during one of the busiest weeks for car retailers, with UK dealerships selling their first 75-plate vehicles. Autocar reported that JLR dealers had been unable to register cars with the new plate.</p> <p>JLR also said in July that it had to<a href=\"https://www.theguardian.com/business/2025/jul/18/jaguar-land-rover-delays-launch-range-rover-electric\"> delay the planned launches </a>of its new electric Range Rover and electric Jaguar models until 2026, after initially aiming for late 2025. The company told staff over the summer that it would axe up to 500 management jobs in the UK as part of a voluntary redundancy round.</p> <p>JLR, which is headquartered in Coventry, employs 32,800 people in the UK across 17 different sites. Last month it announced PB Balaji would become its new chief executive and would take the reins in November.</p> <p>Balaji, who is the group finance chief of Tata Motors, will become the British carmaker’s first Indian chief executive. He will replace Adrian Mardell, who is retiring after three years in the top job and 35 years working for the company.</p> <p>More than <a href=\"https://www.theguardian.com/business/2025/jun/30/uk-businesses-hit-by-cyber-attack-last-year-report\">one in four UK businesses</a> had been the victim of a cyber-attack in the past year and many more risked “sleepwalking” into such disruption unless they took urgent action, according to a survey of facilities managers, service providers and consultancies undertaken by the Royal Institution of Chartered Surveyors (Rics).</p>",
+            "url": "https://www.theguardian.com/business/2025/sep/02/jaguar-land-rover-cyber-incident-manufacturing-retail",
+            "urlToImage": "https://media.guim.co.uk/39542fc1e28250cec2bdfd108f3f0344b0f5dadc/355_0_3301_2640/500.jpg",
+            "publishedAt": "2025-09-02T16:15:37.000Z",
+            "source": {
+                "name": "The Guardian",
+                "id": "the-guardian"
+            },
+            "author": null,
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:36.385Z",
+            "createdAt": "2025-09-02T16:59:36.385Z",
+            "updatedAt": "2025-09-02T16:59:36.385Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72264b6ca4f59eaebfd30",
+            "title": "z0lib 2.0.17",
+            "description": "Bash zeroincombenze lib",
+            "content": "A required part of this site couldnt load. This may be due to a browser\r\n extension, network issues, or browser settings. Please check your\r\n connection, disable any ad blockers, or try using a diffe… [+12 chars]",
+            "url": "https://pypi.org/project/z0lib/2.0.17/",
+            "urlToImage": null,
+            "publishedAt": "2025-09-01T16:59:01.000Z",
+            "source": {
+                "name": "Pypi.org",
+                "id": null
+            },
+            "author": "antoniomaria.vigliotti@gmail.com",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:16.415Z",
+            "createdAt": "2025-09-02T16:59:16.426Z",
+            "updatedAt": "2025-09-02T16:59:16.426Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72264b6ca4f59eaebfd33",
+            "title": "Obita Raises $10 Million for Cross-Border Payment Network",
+            "description": "Cross-border payment and digital financial network Obita received more than $10 million in an angel round. The new funding will be used for research and development, compliance infrastructure development and market expansion, aimed at speeding the deployment …",
+            "content": "Cross-border payment and digital financial network Obita received more than $10 million in an angel round.The new funding will be used for research and development, compliance infrastructure developm… [+2468 chars]",
+            "url": "http://www.pymnts.com/news/cross-border-commerce/cross-border-payments/2025/obita-raises-10-million-dollars-cross-border-payment-network/",
+            "urlToImage": "https://www.pymnts.com/wp-content/uploads/2025/09/Obita.png",
+            "publishedAt": "2025-09-01T16:58:13.000Z",
+            "source": {
+                "name": "pymnts.com",
+                "id": null
+            },
+            "author": "PYMNTS",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:16.690Z",
+            "createdAt": "2025-09-02T16:59:16.693Z",
+            "updatedAt": "2025-09-02T16:59:16.693Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72264b6ca4f59eaebfd36",
+            "title": "South Korea FSC Chief Nominee Under Fire for Calling Crypto Worthless",
+            "description": "South Korea’s Financial Services Commission (FSC) chief nominee Lee Eok-won is facing criticism from the crypto community following his assertion that...",
+            "content": "South Koreas Financial Services Commission (FSC) chief nominee Lee Eok-won is facing criticism from the crypto community following his assertion that cryptocurrencies are worthless.\r\nIn written respo… [+4099 chars]",
+            "url": "https://cryptonews.com/news/south-korea-fsc-chief-nominee-under-fire-for-calling-crypto-worthless/",
+            "urlToImage": "https://media.zenfs.com/en/cryptonews_us_711/462789eb64ae7facc69fb746a3fb5be8",
+            "publishedAt": "2025-09-01T16:57:50.000Z",
+            "source": {
+                "name": "Cryptonews",
+                "id": null
+            },
+            "author": "Anas Hassan",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:16.944Z",
+            "createdAt": "2025-09-02T16:59:16.946Z",
+            "updatedAt": "2025-09-02T16:59:16.946Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72265b6ca4f59eaebfd39",
+            "title": "93% of GPT-4 performance at 1/4 cost: LLM routing with weak bandit feedback",
+            "description": "Large Language Models (LLMs) have revolutionized natural language processing, but their varying capabilities and costs pose challenges in practical applications. LLM routing addresses this by dynamically selecting the most suitable LLM for each query/task. Pr…",
+            "content": "arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.\r\nBoth individuals and organizations that work with arXivLabs have embraced and acce… [+257 chars]",
+            "url": "https://arxiv.org/abs/2508.21141",
+            "urlToImage": "https://arxiv.org/static/browse/0.3.4/images/arxiv-logo-fb.png",
+            "publishedAt": "2025-09-01T16:57:38.000Z",
+            "source": {
+                "name": "Arxiv.org",
+                "id": null
+            },
+            "author": "tdchaitanya",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:17.222Z",
+            "createdAt": "2025-09-02T16:59:17.224Z",
+            "updatedAt": "2025-09-02T16:59:17.224Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72265b6ca4f59eaebfd3c",
+            "title": "django-toosimple-q 1.0.0",
+            "description": "A simplistic task queue and cron-like scheduler for Django",
+            "content": "A required part of this site couldnt load. This may be due to a browser\r\n extension, network issues, or browser settings. Please check your\r\n connection, disable any ad blockers, or try using a diffe… [+12 chars]",
+            "url": "https://pypi.org/project/django-toosimple-q/1.0.0/",
+            "urlToImage": null,
+            "publishedAt": "2025-09-01T16:57:32.000Z",
+            "source": {
+                "name": "Pypi.org",
+                "id": null
+            },
+            "author": "olivier.dalang@gmail.com",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:17.490Z",
+            "createdAt": "2025-09-02T16:59:17.493Z",
+            "updatedAt": "2025-09-02T16:59:17.493Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72265b6ca4f59eaebfd3f",
+            "title": "Jaishawn Barham: Michigan football's targeting appeal denied, will miss OU 1st half",
+            "description": "“We don’t agree with it,” coach Sherrone Moore said. \"It's a rule we have to get changed, and we have to look at...just for the general game.\"",
+            "content": "If you click 'Accept all', we and our partners, including 237 who are part of the IAB Transparency &amp; Consent Framework, will also store and/or access information on a device (in other words, use … [+714 chars]",
+            "url": "https://consent.yahoo.com/v2/collectConsent?sessionId=1_cc-session_a483912f-56c9-4f54-85eb-3de11693e957",
+            "urlToImage": null,
+            "publishedAt": "2025-09-01T16:57:32.000Z",
+            "source": {
+                "name": "Yahoo Entertainment",
+                "id": null
+            },
+            "author": "Detroit Free Press",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:17.753Z",
+            "createdAt": "2025-09-02T16:59:17.755Z",
+            "updatedAt": "2025-09-02T16:59:17.755Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72266b6ca4f59eaebfd42",
+            "title": "UK, Japan, South Korea Endure Hottest Summer On Record",
+            "description": "The UK, Japan and South Korea sweltered this year through the hottest summers since each country began keeping records, their weather agencies said Monday.",
+            "content": "The UK, Japan and South Korea sweltered this year through the hottest summers since each country began keeping records, their weather agencies said Monday.\r\nTemperatures the world over have soared in… [+4249 chars]",
+            "url": "https://www.ibtimes.com.au/uk-japan-south-korea-endure-hottest-summer-record-1860334",
+            "urlToImage": "https://d.ibtimes.com.au/en/full/1888045/woman-umbrella-walks-scorching-sun-tokyo-september-1.jpg",
+            "publishedAt": "2025-09-01T16:57:16.000Z",
+            "source": {
+                "name": "Ibtimes.com.au",
+                "id": null
+            },
+            "author": "Joe JACKSON, with Alice PHILIPSON in Tokyo and KANG Jin-kyu in Seoul",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:18.022Z",
+            "createdAt": "2025-09-02T16:59:18.023Z",
+            "updatedAt": "2025-09-02T16:59:18.023Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72266b6ca4f59eaebfd45",
+            "title": "Liverpool transfer under threat after Marc Guehi medical: report",
+            "description": "Liverpool's proposed move for Crystal Palace defender Marc Guehi is reportedly in jeopardy",
+            "content": "Liverpool may not complete the signing of Crystal Palace and England defender Marc Guehi after all.\r\nGuehi is the subject of a £35 million offer from the Premier League champions, which Palace were u… [+1468 chars]",
+            "url": "https://www.fourfourtwo.com/news/liverpool-transfer-under-threat-after-marc-guehi-medical-report",
+            "urlToImage": "https://cdn.mos.cms.futurecdn.net/29nhWPSYKmuWSzcVN6anPP.jpg",
+            "publishedAt": "2025-09-01T16:57:07.000Z",
+            "source": {
+                "name": "FourFourTwo",
+                "id": "four-four-two"
+            },
+            "author": "Joe Donnohue",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:18.300Z",
+            "createdAt": "2025-09-02T16:59:18.302Z",
+            "updatedAt": "2025-09-02T16:59:18.302Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72266b6ca4f59eaebfd48",
+            "title": "Beltran all set for Valencia, as Fiorentina working on final deals",
+            "description": "Fiorentina have agreed to send striker Lucas Beltran to Valencia on loan until the end of the season, but there is no option to buy, while other Viola moves are in the works.",
+            "content": "Fiorentina have agreed to send striker Lucas Beltran to Valencia on loan until the end of the season, but there is no option to buy, while other Viola moves are in the works.\r\nThe centre-forward seem… [+974 chars]",
+            "url": "https://football-italia.net/beltran-all-set-for-valencia-as-fiorentina/",
+            "urlToImage": "https://icdn.football-italia.net/wp-content/uploads/2025/05/Lucas-Beltran-Fiorentina-thumbs.jpg",
+            "publishedAt": "2025-09-01T16:57:00.000Z",
+            "source": {
+                "name": "Football Italia",
+                "id": "football-italia"
+            },
+            "author": "Alfredo Pedullà",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:18.563Z",
+            "createdAt": "2025-09-02T16:59:18.564Z",
+            "updatedAt": "2025-09-02T16:59:18.564Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72266b6ca4f59eaebfd4b",
+            "title": "mcp-security-framework 1.1.1",
+            "description": "Universal security framework for microservices with SSL/TLS, authentication, authorization, and rate limiting",
+            "content": "A required part of this site couldnt load. This may be due to a browser\r\n extension, network issues, or browser settings. Please check your\r\n connection, disable any ad blockers, or try using a diffe… [+12 chars]",
+            "url": "https://pypi.org/project/mcp-security-framework/1.1.1/",
+            "urlToImage": null,
+            "publishedAt": "2025-09-01T16:56:56.000Z",
+            "source": {
+                "name": "Pypi.org",
+                "id": null
+            },
+            "author": "vasilyvz@gmail.com",
+            "category": "cybersecurity",
+            "tags": [
+                "security"
+            ],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:18.814Z",
+            "createdAt": "2025-09-02T16:59:18.816Z",
+            "updatedAt": "2025-09-02T16:59:18.816Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72267b6ca4f59eaebfd4e",
+            "title": "WWE Clash in Paris takeaways: Becky Lynch's swerve foreshadows another massive potential return",
+            "description": "What comes next after Lynch and Seth Rollins established themselves as WWE’s newest onscreen power couple? Here are the eight biggest takeaways from WWE Clash in Paris.",
+            "content": "If you click 'Accept all', we and our partners, including 237 who are part of the IAB Transparency &amp; Consent Framework, will also store and/or access information on a device (in other words, use … [+714 chars]",
+            "url": "https://consent.yahoo.com/v2/collectConsent?sessionId=1_cc-session_659867ea-e2a5-4e5f-a8f9-3c731e6b1fa5",
+            "urlToImage": null,
+            "publishedAt": "2025-09-01T16:56:46.000Z",
+            "source": {
+                "name": "Yahoo Entertainment",
+                "id": null
+            },
+            "author": "Raj Prashad",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:19.053Z",
+            "createdAt": "2025-09-02T16:59:19.054Z",
+            "updatedAt": "2025-09-02T16:59:19.054Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72267b6ca4f59eaebfd51",
+            "title": "Macron talks Ukraine's security guarantees with Rutte",
+            "description": "French President Emmanuel Macron said on Monday that he spoke with North Atlantic Treaty Organization (NATO) Secretary-General Mark Rutte ahead of the Coalition of the Willing meeting, which will take...",
+            "content": "French President Emmanuel Macron said on Monday that he spoke with North Atlantic Treaty Organization (NATO) Secretary-General Mark Rutte ahead of the Coalition of the Willing meeting, which will tak… [+69 chars]",
+            "url": "https://biztoc.com/x/20df3255054484c7",
+            "urlToImage": "https://biztoc.com/cdn/20df3255054484c7_s.webp",
+            "publishedAt": "2025-09-01T16:56:44.000Z",
+            "source": {
+                "name": "Biztoc.com",
+                "id": null
+            },
+            "author": "breakingthenews.net",
+            "category": "cybersecurity",
+            "tags": [
+                "security"
+            ],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:19.302Z",
+            "createdAt": "2025-09-02T16:59:19.303Z",
+            "updatedAt": "2025-09-02T16:59:19.303Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72267b6ca4f59eaebfd54",
+            "title": "Guyana blames Venezuela for attack on election officials ahead of vote",
+            "description": "The shooting incident comes as Guyanese voters head to the polls to elect a president and parliament.",
+            "content": "Security forces in Guyana say a boat carrying election officials and ballot boxes was shot at \"from the Venezuelan shore\" in the contested Essequibo region.\r\nPolice and the Guyana defence force said … [+3117 chars]",
+            "url": "https://www.bbc.com/news/articles/cpdjwgygnd0o?xtor=AL-72-%5Bpartner%5D-%5Byahoo.north.america%5D-%5Bheadline%5D-%5Bnews%5D-%5Bbizdev%5D-%5Bisapi%5D",
+            "urlToImage": "https://media.zenfs.com/en/bbc_us_articles_995/55032f3ab18d4db5ba385567917572d9",
+            "publishedAt": "2025-09-01T16:56:25.000Z",
+            "source": {
+                "name": "BBC News",
+                "id": null
+            },
+            "author": "Vanessa Buschschlüter - BBC News",
+            "category": "cybersecurity",
+            "tags": [
+                "attack"
+            ],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:19.593Z",
+            "createdAt": "2025-09-02T16:59:19.595Z",
+            "updatedAt": "2025-09-02T16:59:19.595Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72267b6ca4f59eaebfd57",
+            "title": "Americans’ rage at insurers goes beyond health coverage – the author of ‘Delay, Deny, Defend’ points to 3 reforms that could help",
+            "description": "It’s time to move from rage to regulation, an insurance expert argues.",
+            "content": "My book Delay, Deny, Defend: Why Insurance Companies Dont Pay Claims and What You Can Do About It was thrust into the spotlight in late 2024, after UnitedHealthcare CEO Brian Thompson was shot and ki… [+7135 chars]",
+            "url": "https://www.yahoo.com/news/articles/americans-rage-insurers-goes-beyond-165619183.html",
+            "urlToImage": "https://s.yimg.com/ny/api/res/1.2/LLFefBi.pl.9_ssXbRWwnA--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD04MDE7Y2Y9d2VicA--/https://media.zenfs.com/en/the_conversation_us_articles_815/2eab99c94fc466f45d1e4645753e2bbf",
+            "publishedAt": "2025-09-01T16:56:19.000Z",
+            "source": {
+                "name": "Yahoo Entertainment",
+                "id": null
+            },
+            "author": "Jay Feinman, Rutgers University",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:19.842Z",
+            "createdAt": "2025-09-02T16:59:19.843Z",
+            "updatedAt": "2025-09-02T16:59:19.843Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72268b6ca4f59eaebfd5a",
+            "title": "AZDOME M01 Pro Front & Rear (4K/10880p) Dash Cam $30 + Free S/H (0 replies)",
+            "description": "deal [amazon.com]\n\n$30 + Free S/H w/ code L2UYLLSB",
+            "content": "This collaborative space allows users to contribute additional information, tips, and insights to enhance the original deal post. Feel free to share your knowledge and help fellow shoppers make infor… [+26 chars]",
+            "url": "https://slickdeals.net/f/18572557-azdome-m01-pro-front-rear-4k-10880p-dash-cam-30-free-s-h",
+            "urlToImage": "https://slickdeals.net/attachment/9/5/3/2/3/450x450/18199186.thumb",
+            "publishedAt": "2025-09-01T16:56:05.000Z",
+            "source": {
+                "name": "Slickdeals.net",
+                "id": null
+            },
+            "author": "iconian | Staff",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:20.110Z",
+            "createdAt": "2025-09-02T16:59:20.112Z",
+            "updatedAt": "2025-09-02T16:59:20.112Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72268b6ca4f59eaebfd5d",
+            "title": "Microsoft denies recent Windows 11 update is bricking SSDs",
+            "description": "Microsoft denies recent Windows 11 update is bricking SSDsmashable.com",
+            "content": "The recent Windows 11 security update didn't cause those SSD failures, according to Microsoft (via BleepingComputer). But the root cause is still unknown. \r\nUsers began reporting their SSDs and HDDs … [+1475 chars]",
+            "url": "https://me.mashable.com/tech/60321/microsoft-denies-recent-windows-11-update-is-bricking-ssds",
+            "urlToImage": "https://sm.mashable.com/t/mashable_me/article/m/microsoft-/microsoft-denies-recent-windows-11-update-is-bricking-ssds_ey3c.1200.jpg",
+            "publishedAt": "2025-09-01T16:56:05.000Z",
+            "source": {
+                "name": "Mashable",
+                "id": "mashable"
+            },
+            "author": "Cecily Mauran",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:20.339Z",
+            "createdAt": "2025-09-02T16:59:20.341Z",
+            "updatedAt": "2025-09-02T16:59:20.341Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72268b6ca4f59eaebfd60",
+            "title": "This May Be The Simplest Test You Can Perform To See How Fast You’re Actually Aging",
+            "description": "Sometimes improving your health really is simple.",
+            "content": "Shutterstock\r\nIn today’s advanced society, there are thousands of studies and endless research into the topic of aging. You could spend the rest of your life reading about what will make you live lon… [+3529 chars]",
+            "url": "http://twistedsifter.com/2025/09/this-may-be-the-simplest-test-you-can-perform-to-see-how-you-are-aging/",
+            "urlToImage": "https://twistedsifter.com/wp-content/uploads/2025/07/sitting.jpg",
+            "publishedAt": "2025-09-01T16:55:49.000Z",
+            "source": {
+                "name": "Twistedsifter.com",
+                "id": null
+            },
+            "author": "Michael Levanduski",
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:20.579Z",
+            "createdAt": "2025-09-02T16:59:20.581Z",
+            "updatedAt": "2025-09-02T16:59:20.581Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72268b6ca4f59eaebfd63",
+            "title": "BiliStalkerMCP 1.0.2",
+            "description": "MCP Server for getting Bilibili user video updates",
+            "content": "A required part of this site couldnt load. This may be due to a browser\r\n extension, network issues, or browser settings. Please check your\r\n connection, disable any ad blockers, or try using a diffe… [+12 chars]",
+            "url": "https://pypi.org/project/bilistalkermcp/1.0.2/",
+            "urlToImage": null,
+            "publishedAt": "2025-09-01T16:55:47.000Z",
+            "source": {
+                "name": "Pypi.org",
+                "id": null
+            },
+            "author": null,
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:20.823Z",
+            "createdAt": "2025-09-02T16:59:20.824Z",
+            "updatedAt": "2025-09-02T16:59:20.824Z",
+            "__v": 0
+        },
+        {
+            "_id": "68b72269b6ca4f59eaebfd66",
+            "title": "minecraft-datapack-language 15.1.23",
+            "description": "Compile JavaScript-style MDL language or Python API into a Minecraft datapack (1.21+ ready). Features variables, control flow, error handling, and VS Code extension.",
+            "content": "A required part of this site couldnt load. This may be due to a browser\r\n extension, network issues, or browser settings. Please check your\r\n connection, disable any ad blockers, or try using a diffe… [+12 chars]",
+            "url": "https://pypi.org/project/minecraft-datapack-language/15.1.23/",
+            "urlToImage": null,
+            "publishedAt": "2025-09-01T16:55:41.000Z",
+            "source": {
+                "name": "Pypi.org",
+                "id": null
+            },
+            "author": null,
+            "category": "cybersecurity",
+            "tags": [],
+            "isActive": true,
+            "fetchedAt": "2025-09-02T16:59:21.064Z",
+            "createdAt": "2025-09-02T16:59:21.065Z",
+            "updatedAt": "2025-09-02T16:59:21.065Z",
+            "__v": 0
+        }
+    ],
+    "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 348,
+        "pages": 18
+    },
+    "message": "Retrieved 20 articles"
+}

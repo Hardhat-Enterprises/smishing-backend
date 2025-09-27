@@ -1,0 +1,357 @@
+{
+    "info": {
+        "name": "Smishing Detection - News API",
+        "description": "Complete API collection for testing the cyber news caching system",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000",
+            "type": "string"
+        },
+        {
+            "key": "authToken",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Health Check",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/health",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "health"]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "News",
+            "item": [
+                {
+                    "name": "Get All News",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get News with Pagination",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news?page=1&limit=10",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Filter by Category - Phishing",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news?category=phishing",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news"],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "phishing"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Filter by Category - Malware",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news?category=malware",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news"],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "malware"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Search News",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news?search=cybersecurity",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news"],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "cybersecurity"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Filter by Tags",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news?tags=phishing,security",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news"],
+                            "query": [
+                                {
+                                    "key": "tags",
+                                    "value": "phishing,security"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Sort by Date (Ascending)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news?sortBy=publishedAt&sortOrder=asc",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news"],
+                            "query": [
+                                {
+                                    "key": "sortBy",
+                                    "value": "publishedAt"
+                                },
+                                {
+                                    "key": "sortOrder",
+                                    "value": "asc"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Complex Filter Query",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news?category=cybersecurity&search=attack&limit=5&page=1&sortBy=publishedAt&sortOrder=desc",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news"],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "cybersecurity"
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "attack"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "5"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "sortBy",
+                                    "value": "publishedAt"
+                                },
+                                {
+                                    "key": "sortOrder",
+                                    "value": "desc"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "News Management",
+            "item": [
+                {
+                    "name": "Get News Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news/stats",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news", "stats"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Available Categories",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news/categories",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news", "categories"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Manual News Fetch",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/news/fetch",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "news", "fetch"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Authentication (Existing)",
+            "item": [
+                {
+                    "name": "User Signup",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"fullName\": \"Test User\",\n    \"phoneNumber\": \"+1234567890\",\n    \"email\": \"test@example.com\",\n    \"password\": \"securePassword123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/signup",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "signup"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify Email",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"test@example.com\",\n    \"otp\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/verify-email",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "verify-email"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "User Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"securePassword123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "login"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ]
+}
