@@ -13,12 +13,21 @@ export const authMiddleware = async (req, res, next) => {
 
         const decoded = jwt.verify(token, JWT_SECRET);
 
-        const user = await User.findById(decoded.userId);
+        const user = await User.findById(decoded.userId).select("+tokenVersion");
         if (!user) {
             return res.status(401).json({ message: "User not found" });
         }
 
-        if (req.path == "/reactivate") {
+        const currentTokenVersion = user.tokenVersion || 0;
+        const tokenVersionFromJwt = decoded.tokenVersion || 0;
+
+        if (tokenVersionFromJwt !== currentTokenVersion) {
+            return res.status(401).json({
+                message: "Token is invalid. Please log in again.",
+            });
+        }
+
+        if (req.path === "/reactivate") {
             req.user = { id: user._id.toString() };
             return next();
         }
@@ -30,6 +39,6 @@ export const authMiddleware = async (req, res, next) => {
         req.user = { id: user._id.toString() };
         next();
     } catch (error) {
-        res.status(401).json({ message: "Token is invalid" });
+        return res.status(401).json({ message: "Token is invalid" });
     }
 };

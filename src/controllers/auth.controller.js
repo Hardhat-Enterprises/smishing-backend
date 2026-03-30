@@ -230,7 +230,8 @@ export const login = async (req, res) => {
         user.security.lastLoginUA = ua;
         await user.save();
 
-        const token = generateToken({ userId: user._id });
+        //const token = generateToken({ userId: user._id });
+        const token = generateToken({ userId: user._id, tokenVersion: user.tokenVersion || 0 });
 
         if (user.loginAttempts) {
             user.loginAttempts.count = 0;
@@ -283,7 +284,9 @@ export const loginWithPin = async (req, res) => {
         const ok = await comparePassword(String(pin), user.pinHash);
         if (!ok) return res.status(401).json({ success: false, message: "Invalid PIN." });
 
-        const token = generateToken({ userId: user._id });
+        // const token = generateToken({ userId: user._id });
+        const token = generateToken({ userId: user._id, tokenVersion: user.tokenVersion || 0 });
+
         if (user.loginAttempts) {
             user.loginAttempts.count = 0;
             user.loginAttempts.lockUntil = null;
@@ -381,6 +384,8 @@ export const resetpassword = async (req, res) => {
 
         const passwordHash = await hashPassword(newPassword);
         user.passwordHash = passwordHash;
+        user.tokenVersion = (user.tokenVersion || 0) + 1;
+        user.passwordUpdatedAt = new Date();
         await user.save();
 
         if (user.loginAttempts) {
