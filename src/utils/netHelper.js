@@ -94,12 +94,64 @@ export async function getSslInfo(domain, { timeoutMs = 5000 } = {}) {
     });
 }
 
-/** (Optional) Blacklist checks — stubs that return null unless configured */
 export async function getBlacklistSummary(domain) {
-    // You can wire Google Safe Browsing, PhishTank, etc. here.
-    // Return booleans; keep null if not configured to avoid false signals.
+    const url = domain.startsWith("http") ? domain : `https://${domain}`;
+    const results = await Promise.allSettled([checkGoogleSafeBrowsing(url), checkOpenPhish(url)]);
+
     return {
-        googleSafeBrowsing: null, // true/false/null
-        phishTank: null, // true/false/null
+        googleSafeBrowsing: results[0].status === "fulfilled" ? results[0].value : null,
+        openPhish: results[1].status === "fulfilled" ? results[1].value : null,
     };
+}
+
+async function checkGoogleSafeBrowsing(url) {
+    const apiKey = process.env.GOOGLE_SAFE_BROWSING_API_KEY;
+    if (!apiKey) return null;
+
+    try {
+        const response = await fetch(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                client: {
+                    clientId: "smishing-detection",
+                    clientVersion: "1.0.0",
+                },
+                threatInfo: {
+                    threatTypes: [
+                        "MALWARE",
+                        "SOCIAL_ENGINEERING",
+                        "UNWANTED_SOFTWARE",
+                        "POTENTIALLY_HARMFUL_APPLICATION",
+                    ],
+                    platformTypes: ["ANY_PLATFORM"],
+                    threatEntryTypes: ["URL"],
+                    threatEntries: [{ url }],
+                },
+            }),
+        });
+
+        if (!response.ok) return null;
+        const data = await response.json();
+        return data.matches && data.matches.length > 0;
+    } catch (err) {
+        console.error("Google Safe Browsing error:", err.message);
+        return null;
+    }
+}
+
+async function checkOpenPhish(url) {
+    try {
+        const response = await fetch("https://openphish.com/feed.txt", {
+            method: "GET",
+        });
+
+        if (!response.ok) return null;
+        const text = await response.text();
+        const urls = text.split("\n").map((u) => u.trim());
+        return urls.includes(url);
+    } catch (err) {
+        console.error("OpenPhish error:", err.message);
+        return null;
+    }
 }
