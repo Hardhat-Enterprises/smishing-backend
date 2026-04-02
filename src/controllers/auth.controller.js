@@ -76,10 +76,10 @@ export const verifyemail = async (req, res) => {
 
         const user = await User.findOne({ email });
         const now = new Date();
-        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+        if (user?.security?.lockUntil && user.security.lockUntil > now) {
             return res.status(429).json({
                 success: false,
-                message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
+                message: `Account locked. Try again after ${user.security.lockUntil.toLocaleString()}.`,
             });
         }
         if (!user) {
@@ -124,13 +124,7 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
-        const now1 = new Date();
-        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now1) {
-            return res.status(429).json({
-                success: false,
-                message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
-            });
-        }
+
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -138,60 +132,85 @@ export const login = async (req, res) => {
             });
         }
 
-        // --- NEW: get client IP/UA and check lockout ---
+        // --- Get client IP / User-Agent ---
         const ip = getClientIP(req);
         const ua = req.get("user-agent") || "";
         const now = new Date();
 
+        // --- Check if account is locked ---
         if (user?.security?.lockUntil && user.security.lockUntil > now) {
-            await LoginActivity.create({ userId: user._id, ip, userAgent: ua, success: false });
+            await LoginActivity.create({
+                userId: user._id,
+                ip,
+                userAgent: ua,
+                success: false,
+            });
+
             return res.status(423).json({
                 success: false,
-                message: "Account locked. Try again later.",
+                message: `Account locked. Try again after ${user.security.lockUntil.toLocaleString()}.`,
             });
         }
 
-        /*const isMatch = await comparePassword(password, user.passwordHash);
-        if (!isMatch) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid credentials.",
-            });
-        }
-*/
+        // --- Check password ---
         const isMatch = await comparePassword(password, user.passwordHash);
+
         if (!isMatch) {
-            // increment failure count + maybe lock
             user.security = user.security || {};
             user.security.failedLogins = (user.security.failedLogins || 0) + 1;
 
+            const attemptsLeft = LOCKOUT_THRESHOLD - user.security.failedLogins;
+
+            // --- Lock account if threshold reached ---
             if (user.security.failedLogins >= LOCKOUT_THRESHOLD) {
                 user.security.lockUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000);
-                user.security.failedLogins = 0; // reset after locking
+                user.security.failedLogins = 0;
+
+                await user.save();
+
+                await LoginActivity.create({
+                    userId: user._id,
+                    ip,
+                    userAgent: ua,
+                    success: false,
+                });
+
+                return res.status(423).json({
+                    success: false,
+                    message: `Account locked due to multiple failed login attempts. Try again after ${user.security.lockUntil.toLocaleString()}.`,
+                });
             }
 
             await user.save();
-            await LoginActivity.create({ userId: user._id, ip, userAgent: ua, success: false });
+
+            await LoginActivity.create({
+                userId: user._id,
+                ip,
+                userAgent: ua,
+                success: false,
+            });
 
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials.",
+                attemptsLeft,
             });
         }
 
+        // --- Check email verification ---
         if (!user.isEmailVerified) {
             return res.status(403).json({
                 success: false,
                 message: "Please verify your email before logging in.",
             });
         }
-        // --- NEW: success path bookkeeping ---
-        // reset counters
+
+        // --- Reset failed attempts ---
         user.security = user.security || {};
         user.security.failedLogins = 0;
         user.security.lockUntil = null;
 
-        // record success activity
+        // --- Record successful login ---
         await LoginActivity.create({
             userId: user._id,
             ip,
@@ -200,19 +219,20 @@ export const login = async (req, res) => {
             factorsUsed: ["password"],
         });
 
-        // send alert on new IP/device (non-blocking)
+        // --- Detect new device / IP ---
         const { changed } = isNewIPOrDevice(user, ip, ua);
+
         if (changed && (user.security.loginAlerts ?? true)) {
             const uaLabel = userAgentLabel(ua);
+
             const body = `We noticed a new login to your account.
 
-         Time:   ${new Date().toISOString()}
-         IP:     ${ip}
-         Device: ${uaLabel}
+Time:   ${new Date().toISOString()}
+IP:     ${ip}
+Device: ${uaLabel}
 
-         If this wasn't you, please reset your password immediately.`;
+If this wasn't you, please reset your password immediately.`;
 
-            // fire & forget; don’t block login
             sendEmail(user.email, body)
                 .then(async () => {
                     await LoginActivity.updateOne(
@@ -224,19 +244,16 @@ export const login = async (req, res) => {
                 .catch(() => {});
         }
 
-        // update baseline for next time
+        // --- Update login metadata ---
         user.security.lastLoginAt = new Date();
         user.security.lastLoginIP = ip;
         user.security.lastLoginUA = ua;
+
         await user.save();
 
+        // --- Generate token ---
         const token = generateToken({ userId: user._id });
 
-        if (user.loginAttempts) {
-            user.loginAttempts.count = 0;
-            user.loginAttempts.lockUntil = null;
-            await user.save();
-        }
         return res.status(200).json({
             success: true,
             message: "Login successful.",
@@ -244,6 +261,7 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         console.error("login error", error);
+
         return res.status(500).json({
             success: false,
             message: "Internal server error.",
@@ -264,10 +282,10 @@ export const loginWithPin = async (req, res) => {
 
         const user = await User.findOne({ email });
         const now = new Date();
-        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+        if (user?.security?.lockUntil && user.security.lockUntil > now) {
             return res.status(429).json({
                 success: false,
-                message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
+                message: `Account locked. Try again after ${user.security.lockUntil.toLocaleString()}.`,
             });
         }
         if (!user) return res.status(401).json({ success: false, message: "Invalid email." });
@@ -283,12 +301,13 @@ export const loginWithPin = async (req, res) => {
         const ok = await comparePassword(String(pin), user.pinHash);
         if (!ok) return res.status(401).json({ success: false, message: "Invalid PIN." });
 
+        user.security = user.security || {};
+        user.security.failedLogins = 0;
+        user.security.lockUntil = null;
+        await user.save();
+
         const token = generateToken({ userId: user._id });
-        if (user.loginAttempts) {
-            user.loginAttempts.count = 0;
-            user.loginAttempts.lockUntil = null;
-            await user.save();
-        }
+
         return res.status(200).json({ success: true, message: "Login successful.", token });
     } catch (error) {
         console.error(error);
@@ -305,10 +324,10 @@ export const forgotpassword = async (req, res) => {
 
         const user = await User.findOne({ email });
         const now = new Date();
-        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+        if (user?.security?.lockUntil && user.security.lockUntil > now) {
             return res.status(429).json({
                 success: false,
-                message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
+                message: `Account locked. Try again after ${user.security.lockUntil.toLocaleString()}.`,
             });
         }
         if (!user) {
@@ -328,11 +347,6 @@ export const forgotpassword = async (req, res) => {
             });
         }
 
-        if (user.loginAttempts) {
-            user.loginAttempts.count = 0;
-            user.loginAttempts.lockUntil = null;
-            await user.save();
-        }
         return res.status(200).json({
             success: true,
             message: "OTP sent to email for password reset",
@@ -355,10 +369,10 @@ export const resetpassword = async (req, res) => {
 
         const user = await User.findOne({ email });
         const now = new Date();
-        if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
+        if (user?.security?.lockUntil && user.security.lockUntil > now) {
             return res.status(429).json({
                 success: false,
-                message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
+                message: `Account locked. Try again after ${user.security.lockUntil.toLocaleString()}.`,
             });
         }
         if (!user) {
@@ -381,13 +395,13 @@ export const resetpassword = async (req, res) => {
 
         const passwordHash = await hashPassword(newPassword);
         user.passwordHash = passwordHash;
+
+        user.security = user.security || {};
+        user.security.failedLogins = 0;
+        user.security.lockUntil = null;
+
         await user.save();
 
-        if (user.loginAttempts) {
-            user.loginAttempts.count = 0;
-            user.loginAttempts.lockUntil = null;
-            await user.save();
-        }
         return res.status(200).json({
             success: true,
             message: "Password reset successful. You can now log in with your new password.",
