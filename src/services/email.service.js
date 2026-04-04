@@ -17,10 +17,12 @@ console.log(
     },
 );
 
-transporter
-    .verify()
-    .then(() => console.log(" SMTP ready"))
-    .catch((err) => console.error(" SMTP error:", err.message));
+if (process.env.NODE_ENV !== "test") {
+    transporter
+        .verify()
+        .then(() => console.log(" SMTP ready"))
+        .catch((err) => console.error(" SMTP error:", err.message));
+}
 
 export async function sendEmail(to, text) {
     return transporter.sendMail({

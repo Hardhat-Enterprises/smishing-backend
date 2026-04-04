@@ -14,9 +14,15 @@
 
     "format": "prettier --write .",
 
-    "test": "echo \"Error: No test specified\" && exit 1",
+    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js",
 
     "prepare": "husky"
+
+  },
+
+  "jest": {
+
+    "testEnvironment": "node"
 
   },
 
@@ -52,13 +58,19 @@
 
   "devDependencies": {
 
+    "cross-env": "^10.1.0",
+
     "husky": "^9.1.7",
+
+    "jest": "^30.3.0",
 
     "lint-staged": "^15.5.0",
 
-    "nodemon": "^3.1.9",
+    "nodemon": "^3.1.14",
 
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+
+    "supertest": "^7.2.2"
 
   },
 
