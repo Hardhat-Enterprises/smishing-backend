@@ -1,6 +1,6 @@
-import { normalizeText } from "./src/utils/normalization.js";
-import { scrubPii } from "./src/services/privacy.service.js";
-import * as detectionService from "./src/services/detections.service.js";
+import { normalizeText } from './src/utils/normalization.js';
+import { scrubPii } from './src/services/privacy.service.js';
+import * as detectionService from './src/services/detections.service.js';
 
 const testMessage = "Hеllo John Smith, your account 1234-5678-9012 is locked. Verify at http://chаse-vеrify.com";
 // Note: The 'е' in Hеllo and 'а', 'е' in chаse-vеrify are Cyrillic homoglyphs.
