@@ -34,6 +34,8 @@
 
     "express-rate-limit": "^8.1.0",
 
+    "google-libphonenumber": "^3.2.44",
+
     "helmet": "^8.1.0",
 
     "jsonwebtoken": "^9.0.2",
