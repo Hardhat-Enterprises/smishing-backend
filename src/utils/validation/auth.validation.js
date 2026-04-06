@@ -87,3 +87,28 @@ export const resetPasswordSchema = z
             .regex(/^\d{6}$/, `OTP must be 6 digits.`),
     })
     .strict();
+
+export const scanSchema = z
+    .object({
+        message: z
+            .string({ required_error: "Message is required." })
+            .trim()
+            .min(1, "Message cannot be empty.")
+            .max(1000, "Message is too long."),
+        phoneNumber: z
+            .string()
+            .trim()
+            .regex(/^[+0-9()\-\s]{3,25}$/, "Invalid phone number format.")
+            .optional(),
+    })
+    .strict();
+
+export const spamSchema = z
+    .object({
+        message: z
+            .string({ required_error: "Message is required." })
+            .trim()
+            .min(1, "Message cannot be empty.")
+            .max(1000, "Message is too long."),
+    })
+    .strict();
