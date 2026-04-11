@@ -75,17 +75,17 @@ export const verifyemail = async (req, res) => {
         const { email, otp } = req.body;
 
         const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+        }
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
                 success: false,
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
-            });
-        }
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found.",
             });
         }
 
@@ -124,17 +124,17 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email.",
+            });
+        }
         const now1 = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now1) {
             return res.status(429).json({
                 success: false,
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
-            });
-        }
-        if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid email.",
             });
         }
 
@@ -264,6 +264,8 @@ export const loginWithPin = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
+        if (!user) return res.status(401).json({ success: false, message: "Invalid email." });
+
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
@@ -271,7 +273,6 @@ export const loginWithPin = async (req, res) => {
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
             });
         }
-        if (!user) return res.status(401).json({ success: false, message: "Invalid email." });
 
         if (!user.isEmailVerified) {
             return res.status(403).json({ success: false, message: "Please verify your email before logging in." });
@@ -307,17 +308,17 @@ export const forgotpassword = async (req, res) => {
         const { email } = req.body;
 
         const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
                 success: false,
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
-            });
-        }
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
             });
         }
 
@@ -357,17 +358,17 @@ export const resetpassword = async (req, res) => {
         const { email, newPassword, otp } = req.body;
 
         const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
                 success: false,
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
-            });
-        }
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
             });
         }
 
