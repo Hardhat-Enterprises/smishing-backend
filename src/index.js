@@ -51,7 +51,21 @@ import { classifyMessage, fallbackClassify } from "./services/ml.service.js";
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()) : [];
+
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("CORS policy: origin not allowed"));
+            }
+        },
+        credentials: true,
+    }),
+);
 // So req.ip is real when behind nginx/Cloudflare/Render/etc.
 app.set("trust proxy", true);
 
