@@ -51,11 +51,11 @@ smishing-backend/
 
 ### 1. Fork this Repository
 
-Make sure to fork the 'dev' branch or both `main` and `dev`, not ONLY the `main`. (Helpful guide [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo))
+Make sure to fork the `dev` branch or both `main` and `dev`, not ONLY the `main`. (Helpful guide [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo))
 
 ### 2. Clone your Fork
 
-- In the forked repository in your Github account, make sure you are on `dev` branch and go to `Code` then, copy the link https://github.com/your-username/smishing-backend.git
+- In the forked repository in your Github account, make sure you are on `dev` branch and go to `Code` then, copy the link `https://github.com/your-username/smishing-backend.git`
 - Open Git Bash and change directory to the folder where you want to clone your forked repository. Example
 
 ```bash
