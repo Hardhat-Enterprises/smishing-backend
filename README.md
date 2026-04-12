@@ -51,7 +51,7 @@ smishing-backend/
 
 ### 1. Fork this Repository
 
-Make sure to fork the 'dev' branch or both `main` and `dev`, not ONLY the `main`. Helpful guide [here] (https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
+Make sure to fork the 'dev' branch or both `main` and `dev`, not ONLY the `main`. (Helpful guide [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo))
 
 ### 2. Clone your Fork
 
@@ -69,7 +69,7 @@ git clone https://github.com/your-username/smishing-backend.git
 cd smishing-backend
 ```
 
-Helpful guide [here] (https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) in `Cloning your forked repository` section.
+(Helpful guide [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)) in `Cloning your forked repository` section.
 
 ### 2. Install Dependencies
 
@@ -119,7 +119,7 @@ Email
 - `EMAIL_PORT=465`
 - `EMAIL_SECURE=true`
 - `EMAIL_USER=<your_email_address>`
-- `EMAIL_PASS=<your_app_password>` (generate [here](https://myaccount.google.com/apppasswords))`
+- `EMAIL_PASS=<your_app_password>` (generate [here](https://myaccount.google.com/apppasswords))
 
 OTP Settings
 
