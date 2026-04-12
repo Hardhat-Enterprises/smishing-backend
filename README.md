@@ -152,9 +152,9 @@ npm run dev
 This launches the backend with `nodemon` on `http://localhost:3000`.
 A message below indicates the successful running of the server:
 
-`SMTP ENV { host: 'smtp.gmail.com', port: '465' } { user_end: '.com', pass_len: 16 }`
-`Server running on port 3000`
-`Connected to MongoDB`
+`SMTP ENV { host: 'smtp.gmail.com', port: '465' } { user_end: '.com', pass_len: 16 }`  
+`Server running on port 3000`  
+`Connected to MongoDB`  
 ` SMTP ready`
 
 ## 📜 Scripts
