@@ -31,3 +31,19 @@ export const getFilteredDetections = async (filters) => {
 
     return csv;
 };
+// New function added to save ML scan results to MongoDB
+export const saveDetection = async ({ messageContent, phoneNumber, result, confidence, advice, source }) => {
+    const detection = await Detections.create({
+        timestamp: new Date(),
+        phoneNumber: phoneNumber || "unknown",
+        status: result,
+        type: source || "scan",
+        messageContent,
+        result,
+        confidence,
+        advice,
+        source: source || "scan",
+    });
+
+    return detection;
+};
