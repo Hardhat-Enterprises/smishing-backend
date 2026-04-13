@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { saveDetection } from "../services/detections.service.js";
 /**
  * POST /api/scan
  * Predicts whether an SMS message is a smishing attempt
@@ -7,7 +7,7 @@ import axios from "axios";
  * @param {Object} res - Response object
  */
 export const scan = async (req, res) => {
-    const { message } = req.body;
+    const { message, phoneNumber } = req.body;
 
     if (!message) {
         return res.status(422).json({
@@ -18,6 +18,16 @@ export const scan = async (req, res) => {
     try {
         const response = await axios.post("http://localhost:5050/api/predict", { message });
         const { prediction, confidence } = response.data;
+
+        // Save detection result to MongoDB
+        await saveDetection({
+            messageContent: message,
+            phoneNumber: phoneNumber || "unknown",
+            result: prediction,
+            confidence: confidence,
+            advice: "",
+            source: "scan",
+        });
 
         res.json({
             prediction,
