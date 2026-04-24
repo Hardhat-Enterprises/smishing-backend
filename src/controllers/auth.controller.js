@@ -8,6 +8,7 @@ import { getClientIP } from "../utils/ip.js";
 import { isNewIPOrDevice, userAgentLabel } from "../utils/securitySignals.js";
 import bcrypt from "bcrypt";
 import { logSecurityEvent } from "../services/securityAudit.service.js";
+import { detectSuspiciousLoginActivity } from "../services/suspiciousLogin.service.js";
 
 const LOCKOUT_THRESHOLD = Number(process.env.LOCKOUT_THRESHOLD || 5);
 const LOCKOUT_MINUTES = Number(process.env.LOCKOUT_MINUTES || 15);
@@ -323,6 +324,13 @@ export const login = async (req, res) => {
                     details: `Account locked after reaching failed login threshold. Locked until ${user.security.lockUntil.toISOString()}.`,
                 });
 
+                await detectSuspiciousLoginActivity({
+                    userId: user._id,
+                    email: user.email,
+                    ip,
+                    userAgent: ua,
+                });
+
                 return res.status(423).json({
                     success: false,
                     message: `Account locked due to multiple failed login attempts. Try again after ${user.security.lockUntil.toLocaleString()}.`,
@@ -347,6 +355,13 @@ export const login = async (req, res) => {
                 ip,
                 userAgent: ua,
                 details: `Invalid password. Attempts left: ${attemptsLeft}`,
+            });
+
+            await detectSuspiciousLoginActivity({
+                userId: user._id,
+                email: user.email,
+                ip,
+                userAgent: ua,
             });
 
             return res.status(401).json({
