@@ -143,7 +143,7 @@ ML_Service
 
 - `ML_SERVICE_URL=`
 
-(NOTE: In case there changes made in the content of .env, please update the list of content above.)
+(NOTE: In case there are changes/additions made in the content of .env, please update the list of content above.)
 
 ### 5. Running the Server
 
