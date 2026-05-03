@@ -47,3 +47,21 @@ export const saveDetection = async ({ messageContent, phoneNumber, result, confi
 
     return detection;
 };
+// New function to retrieve detections with filtering and pagination
+export const getDetections = async (filters = {}, page = 1, limit = 10) => {
+    const query = {};
+
+    if (filters.status) query.result = filters.status;
+    if (filters.phoneNumber) query.phoneNumber = filters.phoneNumber;
+
+    const skip = (page - 1) * limit;
+    const total = await Detections.countDocuments(query);
+    const detections = await Detections.find(query).sort({ timestamp: -1 }).skip(skip).limit(limit);
+
+    return {
+        detections,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalCount: total,
+    };
+};
