@@ -3,14 +3,10 @@ import { jest } from "@jest/globals";
 import { setupAxiosMock, mockPost } from "./mocks/axios.mock.js";
 import { setupEmailMock } from "./mocks/email.mock.js";
 
-// Mock axios BEFORE importing app
-// This prevents real calls to the ML service
+// Mock axios and email services BEFORE importing app
+// This prevents real calls to the ML and email service
 setupAxiosMock();
 setupEmailMock();
-
-jest.unstable_mockModule("axios", () => ({
-    default: { post: mockPost },
-}));
 
 // Import app after mocking (important for ESM)
 const { default: app } = await import("../src/app.js");
