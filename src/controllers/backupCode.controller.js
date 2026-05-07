@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import { generateBackupCodes, hashBackupCodes } from "../utils/backup.util.js";
-import { generateToken } from "../utils/token.util.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/token.util.js";
 
 /**
  * POST /api/auth/generate-backup-codes
@@ -83,11 +83,14 @@ export const verifyBackupCode = async (req, res) => {
         user.backupCodes[matchedIndex].usedAt = new Date();
         await user.save();
 
-        const token = generateToken({ userId: user._id });
+        // const token = generateToken({ userId: user._id });
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
         return res.status(200).json({
             success: true,
             message: "Login successful with backup code.",
-            token,
+            accessToken,
+            refreshToken,
         });
     } catch (err) {
         console.error("verifyBackupCode error:", err);
