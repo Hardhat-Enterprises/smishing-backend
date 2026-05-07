@@ -1,10 +1,20 @@
 import express from "express";
 
-import { signup, verifyemail, login, forgotpassword, resetpassword } from "../controllers/auth.controller.js";
-import { authMiddleware } from "../middlewares/auth.middleware.js";
+import {
+    signup,
+    verifyemail,
+    login,
+    forgotpassword,
+    resetpassword,
+    refreshToken,
+    logout,
+    logoutAllDevices,
+} from "../controllers/auth.controller.js";
 import { changePassword } from "../controllers/auth.controller.js";
 
 import { loginWithPin } from "../controllers/auth.controller.js";
+
+import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 import {
     validate,
@@ -22,34 +32,33 @@ import {
 } from "../controllers/backupCode.controller.js";
 
 const router = express.Router();
-// POST /signup
+
 router.post("/signup", validate(signupSchema), signup);
 
-// POST /verify-email
 router.post("/verify-email", validate(verifyEmailSchema), verifyemail);
 
-// POST /login
 router.post("/login", validate(loginSchema), login);
 
-// POST /forgot-pin
 router.post("/login-pin", loginWithPin);
 
-// POST /forgot-password
 router.post("/forgot-password", validate(forgotPasswordSchema), forgotpassword);
 
-// POST /reset-password
 router.post("/reset-password", validate(resetPasswordSchema), resetpassword);
 
 router.post("/change-password", authMiddleware, changePassword);
 
+// Secure session management
+router.post("/refresh-token", refreshToken);
+
+router.post("/logout", authMiddleware, logout);
+
+router.post("/logout-all-devices", authMiddleware, logoutAllDevices);
+
 // Backup codes
-// POST /generate-backup-codes  -> create first batch (or replace existing)
 router.post("/generate-backup-codes", authMiddleware, generateAndSaveBackupCodes);
 
-// POST /verify-backup-code     -> login using a backup code
 router.post("/verify-backup-code", verifyBackupCode);
 
-// POST /regenerate-backup-codes -> invalidate old + create new batch
 router.post("/regenerate-backup-codes", authMiddleware, regenerateBackupCodes);
 
 export default router;
