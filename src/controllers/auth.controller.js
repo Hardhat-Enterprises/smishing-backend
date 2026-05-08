@@ -9,6 +9,7 @@ import { isNewIPOrDevice, userAgentLabel } from "../utils/securitySignals.js";
 import bcrypt from "bcrypt";
 import { logSecurityEvent } from "../services/securityAudit.service.js";
 import { detectSuspiciousLoginActivity } from "../services/suspiciousLogin.service.js";
+import { isIpBlocked, recordFailedIpAttempt, shouldTriggerAdaptiveLock } from "../services/adaptiveDefense.service.js";
 
 const LOCKOUT_THRESHOLD = Number(process.env.LOCKOUT_THRESHOLD || 5);
 const LOCKOUT_MINUTES = Number(process.env.LOCKOUT_MINUTES || 15);
@@ -246,6 +247,24 @@ export const login = async (req, res) => {
         const ip = getClientIP(req);
         const ua = req.get("user-agent") || "";
 
+        const ipBlocked = await isIpBlocked(ip);
+        if (ipBlocked) {
+            await logSecurityEvent({
+                email,
+                eventType: "IP_BLOCKED_LOGIN_ATTEMPT",
+                status: "warning",
+                severity: "high",
+                ip,
+                userAgent: ua,
+                details: "Login attempt blocked because IP address is temporarily blocked.",
+            });
+
+            return res.status(403).json({
+                success: false,
+                message: "Too many failed attempts from this IP. Try again later.",
+            });
+        }
+
         const user = await User.findOne({ email });
 
         if (!user) {
@@ -313,6 +332,13 @@ export const login = async (req, res) => {
                     success: false,
                 });
 
+                await recordFailedIpAttempt({
+                    ip,
+                    email: user.email,
+                    userId: user._id,
+                    userAgent: ua,
+                });
+
                 await logSecurityEvent({
                     userId: user._id,
                     email: user.email,
@@ -346,6 +372,13 @@ export const login = async (req, res) => {
                 success: false,
             });
 
+            await recordFailedIpAttempt({
+                ip,
+                email: user.email,
+                userId: user._id,
+                userAgent: ua,
+            });
+
             await logSecurityEvent({
                 userId: user._id,
                 email: user.email,
@@ -363,6 +396,35 @@ export const login = async (req, res) => {
                 ip,
                 userAgent: ua,
             });
+
+            const adaptiveLockTriggered = await shouldTriggerAdaptiveLock({
+                email: user.email,
+                ip,
+                userAgent: ua,
+                userId: user?._id || null,
+            });
+
+            if (adaptiveLockTriggered) {
+                user.security.lockUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000);
+
+                await user.save();
+
+                await logSecurityEvent({
+                    userId: user._id,
+                    email: user.email,
+                    eventType: "ADAPTIVE_LOCK_TRIGGERED",
+                    status: "warning",
+                    severity: "high",
+                    ip,
+                    userAgent: ua,
+                    details: "Adaptive account lock triggered due to repeated suspicious activity.",
+                });
+
+                return res.status(423).json({
+                    success: false,
+                    message: "Adaptive security lock activated. Try again later.",
+                });
+            }
 
             return res.status(401).json({
                 success: false,
