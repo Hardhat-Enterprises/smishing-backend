@@ -7,6 +7,8 @@ describe("POST /api/contact", () => {
         const res = await request(app).post("/api/contact").send({});
 
         expect(res.statusCode).toBeGreaterThanOrEqual(400);
+        expect(res.body).toHaveProperty("status", "error");
+        expect(res.body).toHaveProperty("message", "Name, email, and message are required");
     });
 
     it("should return an error when only email is provided", async () => {
