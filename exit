@@ -1,0 +1,146 @@
+[33m5818914[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdev[m[33m, [m[1;31morigin/dev[m[33m, [m[1;31morigin/HEAD[m[33m)[m Remove POST /preview. Not needed for frontend and backend integration
+[33m3513687[m Removed failedUpdateAttempts and lastFailedUpdateAttempt since incorrect password attempt counter is not needed
+[33m1efa551[m Removed /preview API and incorrect password attempt counter.
+[33mf96673f[m Update README.MD
+[33m8cfc1c6[m Update README.MD
+[33mcd7d77c[m Update README
+[33mf19290f[m Update README
+[33m6644141[m Update README
+[33m527a7d6[m Update README
+[33m63cfc1f[m Merge pull request #68 from Mahir18-GIT/feature/backup-codes
+[33mef88b7c[m feat(email): respect EMAIL_SECURE and default example to Gmail (465/TLS)
+[33md582ada[m chore(deps): add zod  and ua-parser-js (fix module-not-found)
+[33m7f09f29[m fix(auth): protect backup-code generate/regenerate with JWT (authMiddleware)
+[33m19fa782[m docs(env): update .env.example with email + backup-code vars (Mailtrap option)
+[33m7a6f351[m chore(deps): regenerate package-lock.json after merge/rebase
+[33m14dbebb[m chore: update lockfile after npm install
+[33mdd5cbb6[m feat(auth): rebasing dev into the featured branch
+[33m989aca9[m Merge pull request #53 from Moderndo/feature/ai-chat-api
+[33m5b65582[m Update index.js
+[33mc754aa5[m Update index.js
+[33m9958040[m Update index.js
+[33m290f48a[m refactor: clean up index.js (removed duplicates, structured middlewares/routes)
+[33m0adcf94[m fix: revert rate limiter middleware to original state
+[33m7e09429[m fix: restore root README to original state
+[33mf507f83[m Create InputValidation.md
+[33m39958a0[m fix: restore README and revert security middleware
+[33m3917695[m Merge pull request #66 from anshulthakur101/dev
+[33mc851c8d[m Fix: merged latest dev index.js and added FAQ route
+[33m66a2329[m Merge branch 'dev' into feature/ai-chat-api
+[33m1228bbd[m Merge pull request #61 from GP-Cyber64/Errorhandler
+[33m17c14d1[m Update index.js
+[33m312e956[m Merge branch 'dev' into Errorhandler
+[33mf889dfa[m Fix: updated index.js to match latest dev and added FAQ route
+[33m5df80e7[m Fix: cleaned up index.js after conflict resolution
+[33m0104aa5[m Fix: remove duplicate FAQ route, keep /api/faq
+[33md2c6750[m Merge pull request #54 from pareek354/dev
+[33m5811940[m Merge branch 'dev' into dev
+[33m3fcc98f[m Merge pull request #67 from ananthkt20/dev
+[33m3b779af[m Merge branch 'dev' into dev
+[33mfae80c6[m Update db.config.js
+[33m69cf266[m Merge branch 'dev' into dev
+[33md9abdea[m Merge pull request #63 from Ed-ward-Harris/add-input-validation
+[33m37b9b00[m Merge branch 'dev' of https://github.com/GP-Cyber64/smishing-backend into Errorhandler
+[33m6748f88[m fix: update login attempt lock logic and improve user model structure
+[33m6ec165a[m fix(import & logic): Inluced missing import & Changed reactivation logic
+[33ma509a31[m Merge branch 'dev' into add-input-validation
+[33me2be016[m Merge branch 'dev' into dev
+[33mad84c61[m Update report.route.js
+[33mfb57130[m Update requirements.txt
+[33mf57c3cf[m Update report.controller.js
+[33ma6353f1[m Update .env.example
+[33m4e952cf[m Update .env.example
+[33mf9e6a24[m Update db.config.js
+[33m28d128d[m feat(report): add health for /database/reports (ML classify + advice)
+[33m0c27cba[m feat(report): add controller for /api/reports (ML classify + advice)
+[33mc499ba6[m chore(routes): wire report route to new controller/handler
+[33m7751ead[m feat(model): extend Report schema for classification & analysis
+[33m386cd12[m Update index.js
+[33m8c537ea[m feat(api): FastAPI ML client for classification
+[33m322f61d[m feat(ml): add FastAPI service, training script, and requirements
+[33m5573208[m Merge branch 'dev' into dev
+[33m20a4ec2[m Merge pull request #60 from GP-Cyber64/dev
+[33mff6b847[m Merge branch 'dev' into dev
+[33md472255[m Merge branch 'dev' into dev
+[33m3789052[m Merge main into dev: added FAQ routes and resolved conflicts
+[33ma92f30b[m Temp: Save backend FAQ work before switching branches
+[33macb2de3[m remove old login regex, change error message
+[33m2be3a74[m Add input validation
+[33ma9b0f51[m Merge branch 'dev' into feature/ai-chat-api
+[33m899fa7f[m Merge pull request #57 from RAGHAVxDEAKIN/feature/pin-password-login-auth
+[33m6e504bf[m Update auth.controller.js
+[33mbd50d12[m Delete src/services/mailer.js
+[33m7d576db[m fix(error): Git hook error fixed. Files should appear as it should
+[33mf281c23[m fix(git hook error)
+[33m44c2896[m feat(error): Added global error handler
+[33m7ab3027[m feat(error): Added global error handler
+[33m17debe2[m fix(missing): Added missing imports
+[33m87d1ad9[m feat(error): Global error handler
+[33m2fa9844[m feat(delete): Feature to delete user's account
+[33m352126f[m feat(deactivate): Feature to deactivate & reactivate user's account
+[33mb32f7df[m feat(preview): add POST /preview for the preview of changes before updating.
+[33mfca57ff[m feat(auth): Password verification for userUpdate
+[33mbb0c5ed[m Merge conflicts resolved
+[33md1ef8ab[m feat(feature): user update
+[33mcaecc2e[m Merge branch 'dev' into dev
+[33m90bfc91[m Update .env.example
+[33m4c5a13d[m Update db.config.js
+[33m9116956[m Merge branch 'dev' into feature/ai-chat-api
+[33mdeb0c84[m Merge pull request #58 from nimsara27/export-detections-implementation/nimsara
+[33ma635ed2[m Merge branch 'dev' into export-detections-implementation/nimsara
+[33m9d9863a[m Merge pull request #56 from RaveenDilaksha/feat/whoisapi
+[33m70c7ab6[m Add password change validation middleware: implement checks for current and new passwords, enforce complexity requirements, and return validation errors.
+[33m3e66663[m backend fixes: env configs, chat proxy, readmes
+[33m727f516[m backend: restore security & rate limiting; env-driven Flask proxy; add health endpoints; docs
+[33m7319c34[m feat(api): add functionality to convert data to csv
+[33m6efec3b[m Delete docs/research/.env.example
+[33m5959f45[m feat(api): implement basic request and response for exporting detections as csv
+[33m27d326a[m Update .env.example
+[33m5d4326b[m Update .env.example
+[33m6b42508[m fix: remove .DS_Store files and finalize backend changes (PIN + Password login)
+[33m52a7ff2[m fix: secure PIN login with best practices + bug fixes
+[33m51fa7be[m feat: PIN Login Authentication Implemented (Backend)
+[33ma0af436[m feat: helper & dns summary feature added
+[33m6ae0d71[m feat: implemented WHOIS API integration
+[33mc90f2ac[m feat(auth): add PIN login endpoint + signup PIN support
+[33m65d951f[m Implement enhanced login security features: add login activity tracking, IP/device checks, and account lockout mechanism; update dependencies and add utility functions for IP handling and user agent analysis.
+[33m49fe5b7[m Resolve merge: prefer feature versions of package.json and src/index.js
+[33m820bf09[m feat: add screenshots
+[33m68e1fd9[m Added full feedback backend: created model, controller, and route for /api/feedback; tested with Postman and ensured data is saved to MongoDB successfully.
+[33md958d66[m Trigger SonarCloud analysis
+[33maa00fab[m Trigger SonarCloud analysis
+[33m5102542[m Merge pull request #50 from dec1belPP/ml-microservice/pasindu
+[33mf75b46d[m Update index.js
+[33m0ba25fc[m Merge branch 'dev' into ml-microservice/pasindu
+[33m1fdbb56[m Merge pull request #4 from s223519677/main
+[33mca4d7b5[m Update spam.route.js
+[33m3db102e[m Update index.js
+[33mdaadca5[m Update spam.controller.js
+[33m5b3d429[m Merge branch 'dev' into main
+[33m0126ea6[m Merge branch 'dev' into ml-microservice/pasindu
+[33mbc4d50a[m Security & Rate Limiting (#43)
+[33m4e3760f[m feat(scan): add /scan endpoint
+[33md6b742c[m Trusted Contacts Model & API Endpoints (#21)
+[33mb604950[m Merge branch 'dev' into main
+[33m2f3a2e0[m[33m ([m[1;31morigin/main[m[33m)[m feat(auth): implement forgot password + reset password (#18) (#25)
+[33m5412e02[m Merge pull request #16 from Hardhat-Enterprises/dev
+[33m67b3ab0[m Merge pull request #15 from dec1belPP/esm-migration/pasindu
+[33mac7382d[m refactor(repo): migrate from commonjs to esm modules
+[33mb70ae1a[m OTP Implementation (#14)
+[33m29e13d6[m Feat(spam) added massege analysis for dictionary of keywords and phrases,Common scam email domains or patterns,Common URL patterns and use of special characters
+[33mad37b25[m Merge pull request #8 from Hardhat-Enterprises/dev
+[33mbee36b1[m Merge pull request #7 from Hardhat-Enterprises/main
+[33md88c3ad[m docs(contributing.md): add MS Planner guideline
+[33m510c939[m feat(spam): add spam text checker
+[33mb5975b7[m Merge pull request #3 from dec1belPP/main
+[33me68162f[m feat(auth): minimal implementation of /login and /signup
+[33m6b68fc9[m chore(husky): fix husky not working
+[33mb431dad[m Merge pull request #2 from dec1belPP/main
+[33meb9e75a[m docs(ml): add ml project structure
+[33me55be60[m chore(ml): update .gitignore files for Python
+[33mc0ce464[m refactor(ml): add ml project files
+[33md176c68[m Merge pull request #1 from dec1belPP/main
+[33m9cfbe96[m docs(contributing): create CONTRIBUTING.md
+[33m75e7b79[m docs(readme): update README.md
+[33m892a320[m chore(repo): add project files
+[33mce5e182[m Initial commit
