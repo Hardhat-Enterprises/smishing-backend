@@ -106,7 +106,7 @@ Run all tests:
 
 ```bash
 npm test
-
+```
 
 ## 📜 Scripts
 
@@ -119,4 +119,7 @@ npm test
 ## 🤝 Contribution Guidelines
 
 Please refer to the [contributing guide](CONTRIBUTING.md) for more details
+
+```
+
 ```
