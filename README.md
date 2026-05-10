@@ -106,7 +106,7 @@ Run all tests:
 
 ```bash
 npm test
-
+```
 
 ## 📜 Scripts
 
