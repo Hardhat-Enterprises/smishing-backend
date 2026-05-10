@@ -1,6 +1,17 @@
 import express from "express";
 
-import { signup, verifyemail, login, forgotpassword, resetpassword } from "../controllers/auth.controller.js";
+import {
+    signup,
+    verifyemail,
+    login,
+    forgotpassword,
+    resetpassword,
+    setupTotp,
+    verifyAndEnableTotp,
+    disableTotp,
+    verifyLoginTotp,
+    verifyLoginBackupCode,
+} from "../controllers/auth.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { changePassword } from "../controllers/auth.controller.js";
 
@@ -42,7 +53,24 @@ router.post("/reset-password", validate(resetPasswordSchema), resetpassword);
 
 router.post("/change-password", authMiddleware, changePassword);
 
-// Backup codes
+// ========== TOTP / 2FA Endpoints ==========
+// POST /setup-2fa - Initiate 2FA setup (generates secret + QR code)
+router.post("/setup-2fa", authMiddleware, setupTotp);
+
+// POST /verify-2fa - Verify and enable TOTP (requires setupTotp first)
+router.post("/verify-2fa", authMiddleware, verifyAndEnableTotp);
+
+// POST /disable-2fa - Disable TOTP for the user
+router.post("/disable-2fa", authMiddleware, disableTotp);
+
+// POST /verify-login-totp - Complete 2FA during login with TOTP token
+router.post("/verify-login-totp", authMiddleware, verifyLoginTotp);
+
+// POST /verify-login-backup-code - Complete 2FA during login with backup code
+router.post("/verify-login-backup-code", authMiddleware, verifyLoginBackupCode);
+
+// ========== Backup codes ==========
+
 // POST /generate-backup-codes  -> create first batch (or replace existing)
 router.post("/generate-backup-codes", authMiddleware, generateAndSaveBackupCodes);
 

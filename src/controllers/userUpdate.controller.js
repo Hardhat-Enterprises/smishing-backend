@@ -218,3 +218,142 @@ export const deleteAccount = async (req, res) => {
         res.status(500).json({ message: "An unexpected error occurred, cannot delete account" });
     }
 };
+
+/**
+ * GET /profile/secure
+ * Auth: Required
+ * Returns user's profile with security/2FA info
+ * Includes: fullName, email, phoneNumber, totpEnabled, backupCodesCount
+ */
+export const getSecureProfile = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthenticated" });
+        }
+
+        const user = await User.findById(userId).select("+backupCodes");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // Count unused backup codes
+        const backupCodesCount = user.backupCodes.filter((c) => !c.used).length;
+
+        return res.status(200).json({
+            success: true,
+            profile: {
+                id: user._id,
+                fullName: user.fullName,
+                email: user.email,
+                phoneNumber: user.phoneNumber,
+                isEmailVerified: user.isEmailVerified,
+                isActive: user.isActive,
+                totpEnabled: user.totpEnabled,
+                backupCodesCount,
+                createdAt: user.createdAt,
+            },
+        });
+    } catch (error) {
+        console.error("getSecureProfile error:", error);
+        return res.status(500).json({ success: false, message: "Failed to retrieve profile" });
+    }
+};
+
+/**
+ * GET /profile/2fa-settings
+ * Auth: Required
+ * Returns current 2FA settings
+ */
+export const get2FASettings = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthenticated" });
+        }
+
+        const user = await User.findById(userId).select("+backupCodes");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const backupCodesCount = user.backupCodes.filter((c) => !c.used).length;
+        const backupCodesUsedCount = user.backupCodes.filter((c) => c.used).length;
+
+        return res.status(200).json({
+            success: true,
+            twoFASettings: {
+                totpEnabled: user.totpEnabled,
+                totpSetupAt: user.totpSetupAt,
+                backupCodes: {
+                    total: user.backupCodes.length,
+                    unused: backupCodesCount,
+                    used: backupCodesUsedCount,
+                },
+            },
+        });
+    } catch (error) {
+        console.error("get2FASettings error:", error);
+        return res.status(500).json({ success: false, message: "Failed to retrieve 2FA settings" });
+    }
+};
+
+/**
+ * POST /profile/regenerate-backup-codes
+ * Auth: Required
+ * Regenerates backup codes (marks old ones as used)
+ * Returns new plaintext backup codes
+ */
+export const regenerateTotpBackupCodes = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthenticated" });
+        }
+
+        const { password } = req.body;
+        if (!password) {
+            return res
+                .status(400)
+                .json({ success: false, message: "Password is required to regenerate backup codes." });
+        }
+
+        const user = await User.findById(userId).select("+passwordHash +backupCodes");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // Verify password
+        const isMatch = await comparePassword(password, user.passwordHash);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: "Invalid password." });
+        }
+
+        if (!user.totpEnabled) {
+            return res.status(400).json({ success: false, message: "2FA is not enabled for this account." });
+        }
+
+        // Generate new backup codes (10 codes)
+        const { generateBackupCodes, hashBackupCodes } = await import("../utils/backup.util.js");
+        const plainCodes = generateBackupCodes();
+        const hashed = await hashBackupCodes(plainCodes);
+
+        user.backupCodes = hashed.map((h) => ({
+            code: h.codeHash,
+            used: false,
+            createdAt: new Date(),
+        }));
+
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Backup codes regenerated successfully.",
+            codes: plainCodes,
+            message_info: "Save these codes in a safe place. Each code can only be used once.",
+        });
+    } catch (error) {
+        console.error("regenerateTotpBackupCodes error:", error);
+        return res.status(500).json({ success: false, message: "Failed to regenerate backup codes" });
+    }
+};
