@@ -90,6 +90,25 @@ const userSchema = new mongoose.Schema(
             select: false,
             default: [],
         },
+
+        // ========== TOTP / 2FA Fields ==========
+        // TOTP secret (hidden by default)
+        totpSecret: {
+            type: String,
+            select: false,
+            default: null,
+        },
+        // Whether TOTP is currently enabled
+        totpEnabled: {
+            type: Boolean,
+            default: false,
+        },
+        // Track when TOTP was set up
+        totpSetupAt: {
+            type: Date,
+            select: false,
+            default: null,
+        },
     },
     { timestamps: true },
 );
