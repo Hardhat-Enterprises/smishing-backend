@@ -1,46 +1,61 @@
 const analyzeMessage = async (message) => {
     const text = message.toLowerCase();
+
     let score = 0;
     let reasons = [];
 
-    // Financial scam keywords
-    const financialKeywords = ["bank", "payment", "invoice", "credit card", "refund", "transaction", "billing"];
+    // Scam categories
+    const scamCategories = {
+        "BANKING PHISHING": [
+            "bank",
+            "account",
+            "login",
+            "verify",
+            "password",
+            "transaction",
+            "credit card",
+            "suspended account",
+        ],
 
-    // Verification/security keywords
+        "DELIVERY SCAM": [
+            "parcel",
+            "delivery",
+            "shipment",
+            "package",
+            "courier",
+            "redelivery",
+            "track your package",
+            "update your address",
+        ],
+
+        "GIFT CARD SCAM": [
+            "gift card",
+            "apple gift card",
+            "google play card",
+            "steam card",
+            "voucher",
+            "send the code",
+        ],
+
+        "LOTTERY SCAM": ["lottery", "winner", "jackpot", "claim prize", "cash reward"],
+
+        "JOB SCAM": ["job offer", "work from home", "earn money", "salary", "interview", "part time"],
+
+        "OTP SCAM": ["otp", "verification code", "security code", "your otp is"],
+
+        "INVESTMENT SCAM": ["investment", "crypto", "bitcoin", "returns", "profit", "trading"],
+
+        "LOAN SCAM": ["loan approved", "instant loan", "low interest", "emi", "credit limit"],
+    };
+
+    // Risk scoring keywords
+    const financialKeywords = ["bank", "payment", "invoice", "credit card", "refund", "transaction"];
+
     const verificationKeywords = ["account", "verify", "password", "login"];
 
-    // Delivery / parcel scam keywords
-    const deliveryKeywords = [
-        "parcel",
-        "delivery",
-        "shipment",
-        "package",
-        "track your package",
-        "update your address",
-        "redelivery",
-        "courier",
-    ];
+    const urgencyWords = ["urgent", "immediately", "now", "asap", "act fast"];
 
-    // Gift card / impersonation scam keywords
-    const giftCardKeywords = ["gift card", "apple gift card", "google play card", "steam card", "send the code"];
-
-    // Urgency words
-    const urgencyWords = ["urgent", "now", "immediately", "asap", "act fast", "limited time"];
-
-    // Suspicious phishing phrases
-    const suspiciousPhrases = [
-        "account is blocked",
-        "verify your account",
-        "confirm your identity",
-        "suspended account",
-        "click here",
-        "login immediately",
-    ];
-
-    // Safe OTP phrases
-    const safeOtpPhrases = ["never share this code", "your otp is"];
-
-    // Financial keywords scoring
+    // Financial scoring
     financialKeywords.forEach((word) => {
         if (text.includes(word)) {
             score += 20;
@@ -48,47 +63,13 @@ const analyzeMessage = async (message) => {
         }
     });
 
-    // Verification keywords scoring
+    // Verification scoring
     verificationKeywords.forEach((word) => {
         if (text.includes(word)) {
             score += 15;
             reasons.push(`Security keyword detected: ${word}`);
         }
     });
-
-    // Delivery scam scoring
-    deliveryKeywords.forEach((word) => {
-        if (text.includes(word)) {
-            score += 10;
-            reasons.push(`Delivery-related keyword detected: ${word}`);
-        }
-    });
-
-    // Gift card scam scoring
-    giftCardKeywords.forEach((word) => {
-        if (text.includes(word)) {
-            score += 25;
-            reasons.push(`Gift card scam keyword detected: ${word}`);
-        }
-    });
-
-    // URL detection
-    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
-    const urls = text.match(urlRegex);
-
-    if (urls && urls.length > 0) {
-        score += 20;
-        reasons.push("Contains URL");
-
-        const shorteners = ["bit.ly", "tinyurl.com", "t.co", "goo.gl"];
-
-        const hasShortener = urls.some((url) => shorteners.some((shortener) => url.includes(shortener)));
-
-        if (hasShortener) {
-            score += 25;
-            reasons.push("Contains shortened URL");
-        }
-    }
 
     // Urgency scoring
     urgencyWords.forEach((word) => {
@@ -98,31 +79,31 @@ const analyzeMessage = async (message) => {
         }
     });
 
-    // Suspicious phrase scoring
-    suspiciousPhrases.forEach((phrase) => {
-        if (text.includes(phrase)) {
-            score += 20;
-            reasons.push(`Suspicious phrase detected: ${phrase}`);
-        }
-    });
+    // URL detection
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
 
-    // Safe OTP reduction logic
-    safeOtpPhrases.forEach((phrase) => {
-        if (text.includes(phrase)) {
-            score -= 15;
-            reasons.push("Legitimate OTP-style message detected");
-        }
-    });
-
-    // Prevent negative scores
-    if (score < 0) {
-        score = 0;
+    if (text.match(urlRegex)) {
+        score += 20;
+        reasons.push("Contains suspicious URL");
     }
 
-    // Add baseline score for safe messages
-    if (score === 0) {
-        score = 5;
-    }
+    // Scam type detection
+    let scamType = "GENERAL";
+    let matchedKeywords = [];
+
+    Object.entries(scamCategories).forEach(([category, keywords]) => {
+        keywords.forEach((keyword) => {
+            if (text.includes(keyword)) {
+                matchedKeywords.push(keyword);
+
+                if (scamType === "GENERAL") {
+                    scamType = category;
+                }
+            }
+        });
+    });
+
+    matchedKeywords = [...new Set(matchedKeywords)];
 
     // Remove duplicate reasons
     reasons = [...new Set(reasons)];
@@ -140,6 +121,8 @@ const analyzeMessage = async (message) => {
         message,
         score,
         riskLevel,
+        scamType,
+        matchedKeywords,
         reasons,
     };
 };
