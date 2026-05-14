@@ -1,7 +1,19 @@
 import helmet from "helmet";
 
 const securityMiddleware = helmet({
-    contentSecurityPolicy: false,
+    // OK, strong security headers: HSTS, frameguard, no-sniff, and CSP
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:"],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'", "data:"],
+            objectSrc: ["'none'"],
+            frameAncestors: ["'none'"],
+        },
+    },
     crossOriginResourcePolicy: { policy: "same-site" },
     crossOriginOpenerPolicy: { policy: "same-origin" },
     frameguard: { action: "deny" },

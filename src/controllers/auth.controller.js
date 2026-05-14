@@ -7,6 +7,7 @@ import LoginActivity from "../models/loginActivity.model.js";
 import { getClientIP } from "../utils/ip.js";
 import { isNewIPOrDevice, userAgentLabel } from "../utils/securitySignals.js";
 import { generateTotpSecret, verifyTotpToken, generateTotpQrCode, isValidTotpFormat } from "../utils/totp.util.js";
+import { sanitizeQueryInput } from "../utils/querySanitizer.js";
 import bcrypt from "bcrypt";
 
 const LOCKOUT_THRESHOLD = Number(process.env.LOCKOUT_THRESHOLD || 5);
@@ -19,7 +20,7 @@ export const signup = async (req, res) => {
     try {
         const { fullName, phoneNumber, email, password, pin } = req.body;
 
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne(sanitizeQueryInput({ email }));
         if (existingUser) {
             return res.status(409).json({
                 success: false,
@@ -75,7 +76,7 @@ export const verifyemail = async (req, res) => {
     try {
         const { email, otp } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne(sanitizeQueryInput({ email }));
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
@@ -124,7 +125,7 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne(sanitizeQueryInput({ email }));
         const now1 = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now1) {
             return res.status(429).json({
@@ -316,7 +317,7 @@ export const forgotpassword = async (req, res) => {
     try {
         const { email } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne(sanitizeQueryInput({ email }));
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
@@ -366,7 +367,7 @@ export const resetpassword = async (req, res) => {
     try {
         const { email, newPassword, otp } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne(sanitizeQueryInput({ email }));
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
