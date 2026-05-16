@@ -16,7 +16,7 @@ export const scan = async (req, res) => {
     }
 
     try {
-        const response = await axios.post("http://localhost:5050/api/predict", { message });
+        const response = await axios.post(`${process.env.ML_SERVICE_URL}/api/predict`, { message });
         const { prediction, confidence } = response.data;
 
         // Save detection result to MongoDB
