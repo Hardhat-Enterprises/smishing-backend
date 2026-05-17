@@ -16,6 +16,17 @@ const ClassificationSchema = new mongoose.Schema(
     probabilities: { type: Map, of: Number },   // e.g. { ham: 0.12, spam: 0.34, smishing: 0.54 }
     severity: { type: String, enum: ["low", "medium", "high"] },
     model_version: { type: String },
+
+    // NEW Signals (Honeycomb, Brand, Liveness, Velocity)
+    riskScore: { type: Number },
+    isHighIntent: { type: Boolean },
+    honeycomb: { type: Object },
+    brandMismatch: { type: Object },
+    urlAnalysis: { type: Object },
+    velocity: { type: Object },
+    rule_reason: { type: String },
+    advice: { type: Object },
+    actions: { type: [String] }
   },
   { _id: false } // don't create an _id for the subdoc
 );
