@@ -1,0 +1,3 @@
+ollama-flask-backend/venv/
+ollama-flask-backend/_pycache_/
+ollama-flask-backend/.env
