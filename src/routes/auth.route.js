@@ -12,7 +12,6 @@ router.post("/signup", signup);
 router.post("/verify-email", verifyemail);
 
 // POST /login
-// router.post("/login", login);
 router.post("/login", loginLimiter, sanitizeInput, login);
 
 // POST /forgot-password
