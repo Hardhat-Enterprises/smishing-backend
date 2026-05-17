@@ -14,7 +14,7 @@ export const getProfile = async (req, res) => {
 
     res.json(user);
 };
-
+/*
 // POST /preview
 export const previewUpdate = async (req, res) => {
     const { fullName, phoneNumber, email } = req.body;
@@ -58,14 +58,14 @@ export const previewUpdate = async (req, res) => {
         preview: previewUser,
     });
 };
-
+*/
 // PUT /update
 export const updateProfile = async (req, res) => {
     const { fullName, phoneNumber, email, password } = req.body;
     const user = await User.findById(req.user.id);
 
     if (!user) return res.status(404).json({ message: "User not found" });
-
+    /*
     // Initialize tracking fields if missing
     if (!user.failedUpdateAttempts) user.failedUpdateAttempts = 0;
     if (!user.lastFailedUpdateAttempt) user.lastFailedUpdateAttempt = new Date(0);
@@ -82,8 +82,8 @@ export const updateProfile = async (req, res) => {
         return res.status(403).json({
             message: "Too many failed attempts. Please try again after 24 hours.",
         });
-    }
-
+    }*/
+    /*
     // Require password
     if (!password) {
         return res.status(400).json({ message: "Password is required to update profile." });
@@ -105,11 +105,12 @@ export const updateProfile = async (req, res) => {
     // Password correct → reset attempts
     user.failedUpdateAttempts = 0;
     user.lastFailedUpdateAttempt = null;
-
+*/
     // Update fields with validation
     if (fullName) user.fullName = fullName;
 
     if (phoneNumber) {
+        //GET RID
         if (!/^\d+$/.test(phoneNumber)) {
             return res
                 .status(400)

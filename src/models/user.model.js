@@ -65,7 +65,7 @@ const userSchema = new mongoose.Schema(
             tokenVersion: { type: Number, default: 0, select: true },
             passwordUpdatedAt: { type: Date },
         },
-
+        /*
         failedUpdateAttempts: {
             type: Number,
             default: 0,
@@ -73,7 +73,7 @@ const userSchema = new mongoose.Schema(
         lastFailedUpdateAttempt: {
             type: Date,
             default: new Date(0),
-        },
+        },*/
         isActive: {
             type: Boolean,
             default: true,
