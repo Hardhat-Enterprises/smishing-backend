@@ -1,5 +1,5 @@
 import axios from "axios";
-import { analyzeMessageUrls } from "../services/detections.service.js";
+import { analyzeMessageUrls, extractBrandMentions } from "../services/detections.service.js";
 import { trackScanResult } from "../middlewares/fingerprint.middleware.js";
 
 /**
@@ -22,7 +22,8 @@ export const scan = async (req, res) => {
         const { prediction, confidence } = response.data;
         
         // Enhance with lexical analysis
-        const urlAnalysis = analyzeMessageUrls(message);
+        const brandMentions = extractBrandMentions(message);
+        const urlAnalysis = await analyzeMessageUrls(message, brandMentions);
         
         // Track the scan result for this fingerprint
         trackScanResult(req.fingerprint, prediction);
@@ -31,13 +32,15 @@ export const scan = async (req, res) => {
             prediction,
             confidence,
             urlAnalysis,
+            brandMentions: brandMentions.map(b => b.name),
             fingerprint: req.fingerprint // Included for verification
         });
     } catch (error) {
         console.error("Prediction API error:", error.message);
         
         // Fallback or just report error
-        const urlAnalysis = analyzeMessageUrls(message);
+        const brandMentions = extractBrandMentions(message);
+        const urlAnalysis = await analyzeMessageUrls(message, brandMentions);
         const prediction = urlAnalysis.maxRisk > 60 ? "smishing" : "ham";
         
         // Track the fallback result too

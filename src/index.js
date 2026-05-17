@@ -137,6 +137,10 @@ app.post("/api/reports", async (req, res) => {
     const analysis = detectionService.quickHeuristics(messageText);
     const cta = detectionService.detectCtaSequence(messageText);
     const velocity = await detectionService.checkAttackVelocity(messageText);
+    const honeycomb = await detectionService.checkCollaborativeIntelligence(messageText);
+    const brandMentions = detectionService.extractBrandMentions(messageText);
+    const brandMismatch = detectionService.detectBrandMismatch(messageText, phoneNumber, brandMentions);
+    const urlAnalysis = await detectionService.analyzeMessageUrls(messageText, brandMentions);
 
     const ml = await classifyMessage(messageText);  
     if (!ml.ok) console.warn("[ML] Using fallback classifier:", ml.error);  
@@ -149,7 +153,10 @@ app.post("/api/reports", async (req, res) => {
       ml: normalized,
       heuristics: analysis,
       cta: cta,
-      blacklist: { isHit: blacklistHit }
+      blacklist: { isHit: blacklistHit },
+      honeycomb: honeycomb,
+      brandMismatch: brandMismatch,
+      urlAnalysis: urlAnalysis
     });
 
     const guarded = detectionService.applyGuardrails(normalized, messageText);
@@ -160,7 +167,10 @@ app.post("/api/reports", async (req, res) => {
       ...weightedResult,
       riskScore: weightedResult.finalScore, // Normalized 0-100 score
       isHighIntent: cta.isHighIntent,
-      velocity: velocity
+      velocity: velocity,
+      honeycomb: honeycomb,
+      brandMismatch: brandMismatch,
+      urlAnalysis: urlAnalysis
     };
 
     if (cta.isHighIntent) {
@@ -170,6 +180,13 @@ app.post("/api/reports", async (req, res) => {
     const { advice, actions } = detectionService.buildAdvice(finalClassification, /(http|https):\/\//i.test(messageText));
     if (velocity.isVelocityAttack) {
       advice.velocity_warning = velocity.warning;
+    }
+    if (honeycomb.isLiveCampaign) {
+      advice.honeycomb_warning = honeycomb.message;
+    }
+    const deadEnd = urlAnalysis.analysis.find(a => a.liveness.isDeadEnd);
+    if (deadEnd) {
+      advice.liveness_warning = `🚨 Dead-end link detected: ${deadEnd.liveness.reason}. This is a common tactic in burner smishing campaigns.`;
     }
 
     const classification = { ...finalClassification, advice, actions };  

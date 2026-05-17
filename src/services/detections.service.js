@@ -4,6 +4,11 @@ import { extractUrls, analyzePath, getTLDRisk } from "../utils/entropy.js";
 import { normalizeText } from '../utils/normalization.js';
 import { scrubPii } from './privacy.service.js';
 import Report from '../models/report.model.js';
+import { jaroWinkler } from '../utils/similarity.js';
+import { extractBrandMentions as _extractBrandMentions } from '../utils/brandKnowledge.js';
+import { checkUrlLiveness } from '../utils/liveness.js';
+
+export const extractBrandMentions = _extractBrandMentions;
 
 /**
  * Financial CTA Sequence Detector
@@ -73,15 +78,40 @@ export const calculateWeightedRisk = (signals = {}) => {
         };
     }
 
+    // Honeycomb: Live campaign detected by collaborative intelligence
+    if (signals.honeycomb?.isLiveCampaign) {
+        return {
+            finalScore: 100,
+            label: 'smishing',
+            reason: 'Honeycomb: Live coordinated attack campaign detected',
+            confidence: 1.0,
+            badge: 'Smishing',
+            severity: 'high'
+        };
+    }
+
+    // Brand Mismatch: Identity fraud detected
+    if (signals.brandMismatch?.isMismatch) {
+        return {
+            finalScore: 95,
+            label: 'smishing',
+            reason: `Identity Mismatch: ${signals.brandMismatch.mismatches.map(m => m.reason).join(', ')}`,
+            confidence: 0.95,
+            badge: 'Smishing',
+            severity: 'high'
+        };
+    }
+
     const mlSignal = signals.ml || {};
     const mlScore = mlSignal.label === 'smishing' ? (mlSignal.confidence * 100) :
                     mlSignal.label === 'spam' ? (mlSignal.confidence * 50) : 0;
 
     const hSignal = signals.heuristics || {};
     const ctaSignal = signals.cta || {};
+    const urlSignal = signals.urlAnalysis || { maxRisk: 0 };
     
-    // Combine standard heuristics and CTA sequence intent
-    const heuristicScore = Math.max(hSignal.riskScore || 0, ctaSignal.score || 0);
+    // Combine standard heuristics, CTA sequence intent, and URL risk (including liveness)
+    const heuristicScore = Math.max(hSignal.riskScore || 0, ctaSignal.score || 0, urlSignal.maxRisk || 0);
 
     let totalScore = 0;
     let totalWeight = 0;
@@ -187,6 +217,100 @@ const categorizeMessage = (text) => {
     if (/bank|card|account|payment/i.test(t)) return 'Financial';
     if (/win|prize|lottery|gift/i.test(t)) return 'Prize';
     return 'Other';
+};
+
+/**
+ * Cross-User Collaborative Intelligence (The "Honeycomb")
+ * Detects coordinated "blast" attacks by correlating similar messages.
+ */
+export const checkCollaborativeIntelligence = async (messageText = "") => {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000);
+    
+    const SIMILARITY_THRESHOLD = 0.85;
+    const BURST_THRESHOLD = 50;
+
+    try {
+        // Fetch reports from the last hour
+        const recentReports = await Report.find({
+            createdAt: { $gte: oneHourAgo }
+        }).select('messageText createdAt');
+
+        let similarCountTotal = 0;
+        let similarCountBurst = 0;
+
+        const normalizedCurrent = messageText.toLowerCase().trim();
+
+        for (const report of recentReports) {
+            const normalizedReport = report.messageText.toLowerCase().trim();
+            
+            // Coarse Filter: Skip if length difference is too large (optimization)
+            if (Math.abs(normalizedCurrent.length - normalizedReport.length) > normalizedCurrent.length * 0.3) {
+                continue;
+            }
+
+            const similarity = jaroWinkler(normalizedCurrent, normalizedReport);
+            if (similarity >= SIMILARITY_THRESHOLD) {
+                similarCountTotal++;
+                if (report.createdAt >= thirtyMinsAgo) {
+                    similarCountBurst++;
+                }
+            }
+        }
+
+        const isLiveCampaign = similarCountBurst >= BURST_THRESHOLD;
+
+        return {
+            similarReportsLastHour: similarCountTotal,
+            similarReportsBurst: similarCountBurst,
+            isLiveCampaign,
+            burstThreshold: BURST_THRESHOLD,
+            message: isLiveCampaign 
+                ? "🚨 Live coordinated attack detected! Multiple users reported similar messages recently." 
+                : null
+        };
+    } catch (err) {
+        console.error("Honeycomb Analysis error:", err);
+        return { isLiveCampaign: false, error: err.message };
+    }
+};
+
+/**
+ * Brand Impersonation & Identity Mismatch Logic
+ * Validates sender identity against brands mentioned in the message.
+ */
+export const detectBrandMismatch = (text = "", senderId = "", preExtractedBrands = null) => {
+    const brands = preExtractedBrands || extractBrandMentions(text);
+    if (brands.length === 0) return { isMismatch: false, brands: [] };
+
+    const mismatches = [];
+    for (const brand of brands) {
+        // If senderId is a standard mobile number (starts with + or has many digits)
+        // and brand usually uses official Sender IDs or Short-codes
+        const isPrivateNumber = /^\+?\d{10,15}$/.test(senderId);
+        const isOfficialSender = brand.officialSenders.some(s => 
+            s.toLowerCase() === senderId.toLowerCase()
+        );
+
+        if (isPrivateNumber && !isOfficialSender) {
+            mismatches.push({
+                brand: brand.name,
+                reason: `Brand message from private number: ${senderId}`
+            });
+        } else if (senderId && !isOfficialSender && !isPrivateNumber) {
+            // Mismatched alphanumeric sender ID
+            mismatches.push({
+                brand: brand.name,
+                reason: `Sender ID "${senderId}" does not match official ${brand.name} senders`
+            });
+        }
+    }
+
+    return {
+        isMismatch: mismatches.length > 0,
+        mismatches,
+        brands: brands.map(b => b.name)
+    };
 };
 
 /**
@@ -351,13 +475,14 @@ export const applyGuardrails = (classification, text = "") => {
  * Analyzes all URLs within a message and returns a consolidated risk report.
  * 
  * @param {string} message - The message text to analyze.
+ * @param {Array} brandMentions - Optional array of brand objects detected in the text.
  * @returns {Object} - Risk analysis results.
  */
-export const analyzeMessageUrls = (message) => {
+export const analyzeMessageUrls = async (message, brandMentions = []) => {
     if (!message) return { urlsDetected: 0, maxRisk: 0, analysis: [] };
     
     const urls = extractUrls(message);
-    const analysis = urls.map(url => {
+    const analysis = await Promise.all(urls.map(async (url) => {
         let hostname = "";
         try {
             hostname = new URL(url).hostname;
@@ -377,13 +502,23 @@ export const analyzeMessageUrls = (message) => {
         if (pathInfo.hasSuspiciousExtension) riskScore += 40; // High risk for extensions like .php, .exe
         riskScore += tldRisk * 3;               // TLD risk weight (e.g., .top, .link)
         
+        // Perform Liveness check (Task 3)
+        const liveness = await checkUrlLiveness(url, brandMentions);
+        if (liveness.isDeadEnd) {
+            riskScore += 40; // Burner/Dead link is a very high indicator of smishing
+        }
+        if (liveness.hasAtSymbolTrick) {
+            riskScore += 50; // Very high indicator
+        }
+
         return {
             url,
             riskScore: Math.min(100, Math.round(riskScore)),
             ...pathInfo,
-            tldRisk
+            tldRisk,
+            liveness
         };
-    });
+    }));
 
     const maxRisk = analysis.length > 0 ? Math.max(...analysis.map(a => a.riskScore)) : 0;
 
