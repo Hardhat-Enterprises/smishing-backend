@@ -9,6 +9,8 @@ const PII_PATTERNS = [
     { type: 'PHONE', regex: /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g },
     { type: 'CREDIT_CARD', regex: /(?:\d{4}[-.\s]?){2,3}\d{4}/g }, // Catches 12 and 16 digit variants
     { type: 'SSN', regex: /\d{3}-\d{2}-\d{4}/g },
+    // KNOWN LIMITATION: Broad pattern may catch timestamps or zip codes.
+    // Refine with context-aware logic if false positives become an issue.
     { type: 'ACCOUNT_NUMBER', regex: /\b\d{8,12}\b/g },
     { type: 'FULL_NAME_GREETING', regex: /(?:Hi|Hello|Dear|Hey)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?/g },
 ];
