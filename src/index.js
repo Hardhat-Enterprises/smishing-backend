@@ -44,6 +44,7 @@ import Report from "./models/report.model.js";
 // -------------------------------  
 import { classifyMessage, fallbackClassify } from "./services/ml.service.js";  
 import * as detectionService from "./services/detections.service.js";
+import { checkDomainReputation } from "./services/whois.service.js";
 import { anonymizeReportData } from "./services/privacy.service.js";
 
 // -------------------------------  
@@ -117,18 +118,61 @@ app.post("/api/reports", async (req, res) => {
 
     const source = ["android", "web", "test"].includes(sourceRaw) ? sourceRaw : "android";  
 
+    // Extract domain for blacklist check
+    const urlMatch = messageText.match(/https?:\/\/[^\s]+/i);
+    let blacklistHit = false;
+    if (urlMatch) {
+      try {
+        const domain = urlMatch[0].replace(/^https?:\/\//i, '').split('/')[0];
+        const whois = await checkDomainReputation(domain);
+        if (whois && whois.blacklist && whois.blacklist.isHit) {
+          blacklistHit = true;
+        }
+      } catch (err) {
+        console.warn("WHOIS check failed:", err.message);
+      }
+    }
+
     // Analyze raw text for best accuracy
-    const analysis = detectionService.quickHeuristics(messageText);  
+    const analysis = detectionService.quickHeuristics(messageText);
+    const cta = detectionService.detectCtaSequence(messageText);
+    const velocity = await detectionService.checkAttackVelocity(messageText);
 
     const ml = await classifyMessage(messageText);  
     if (!ml.ok) console.warn("[ML] Using fallback classifier:", ml.error);  
     const baseClassification = ml.ok ? ml.data : fallbackClassify(messageText);  
 
-    const normalized = detectionService.normalizeClassification(baseClassification);  
-    const guarded = detectionService.applyGuardrails(normalized, messageText);  
+    const normalized = detectionService.normalizeClassification(baseClassification);
 
-    const { advice, actions } = detectionService.buildAdvice(guarded, /(http|https):\/\//i.test(messageText));  
-    const classification = { ...guarded, advice, actions };  
+    // Weighted Voting Integration
+    const weightedResult = detectionService.calculateWeightedRisk({
+      ml: normalized,
+      heuristics: analysis,
+      cta: cta,
+      blacklist: { isHit: blacklistHit }
+    });
+
+    const guarded = detectionService.applyGuardrails(normalized, messageText);
+    
+    // Final classification uses weighted result but keeps guarded rules for safety
+    const finalClassification = {
+      ...guarded,
+      ...weightedResult,
+      riskScore: weightedResult.finalScore, // Normalized 0-100 score
+      isHighIntent: cta.isHighIntent,
+      velocity: velocity
+    };
+
+    if (cta.isHighIntent) {
+      finalClassification.rule_reason = (finalClassification.rule_reason ? finalClassification.rule_reason + " + " : "") + "High Intent Pattern";
+    }
+
+    const { advice, actions } = detectionService.buildAdvice(finalClassification, /(http|https):\/\//i.test(messageText));
+    if (velocity.isVelocityAttack) {
+      advice.velocity_warning = velocity.warning;
+    }
+
+    const classification = { ...finalClassification, advice, actions };  
 
     // TASK 2: Scrub PII before saving to DB
     const reportData = anonymizeReportData({
