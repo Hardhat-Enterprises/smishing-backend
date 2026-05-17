@@ -35,7 +35,7 @@ export const getFilteredDetections = async (filters) => {
 export const saveDetection = async ({ messageContent, phoneNumber, result, confidence, advice, source }) => {
     const detection = await Detections.create({
         timestamp: new Date(),
-        phoneNumber: phoneNumber || "null",
+        phoneNumber: phoneNumber || null,
         status: result,
         type: source || "scan",
         messageContent,
