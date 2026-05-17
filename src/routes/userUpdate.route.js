@@ -1,7 +1,7 @@
 import express from "express";
 import {
     getProfile,
-    previewUpdate,
+    // previewUpdate,
     updateProfile,
     deactivateAccount,
     reactivateAccount,
@@ -18,7 +18,7 @@ router.use(authMiddleware);
 router.get("/me", getProfile);
 
 // POST /preview -> preview update (no DB changes)
-router.post("/preview", previewUpdate);
+//router.post("/preview", previewUpdate);
 
 // PUT /update
 router.put("/update", updateProfile);
