@@ -1,4 +1,5 @@
 import axios from "axios";
+import { saveDetection } from "../services/detections.service.js";
 import { analyzeMessageUrls, extractBrandMentions } from "../services/detections.service.js";
 import { trackScanResult } from "../middlewares/fingerprint.middleware.js";
 
@@ -9,7 +10,7 @@ import { trackScanResult } from "../middlewares/fingerprint.middleware.js";
  * @param {Object} res - Response object
  */
 export const scan = async (req, res) => {
-    const { message } = req.body;
+    const { message, phoneNumber } = req.body;
 
     if (!message) {
         return res.status(422).json({
@@ -18,7 +19,7 @@ export const scan = async (req, res) => {
     }
 
     try {
-        const response = await axios.post("http://localhost:5050/api/predict", { message });
+        const response = await axios.post(`${process.env.ML_SERVICE_URL}/api/predict`, { message });
         const { prediction, confidence } = response.data;
         
         // Enhance with lexical analysis
@@ -27,6 +28,16 @@ export const scan = async (req, res) => {
         
         // Track the scan result for this fingerprint
         trackScanResult(req.fingerprint, prediction);
+
+        // Save detection result to MongoDB
+        await saveDetection({
+            messageContent: message,
+            phoneNumber: phoneNumber || "unknown",
+            result: prediction,
+            confidence: confidence,
+            advice: "",
+            source: "scan",
+        });
 
         res.json({
             prediction,
