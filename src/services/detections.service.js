@@ -1,5 +1,190 @@
 import { normalizeText } from '../utils/normalization.js';
 import { scrubPii } from './privacy.service.js';
+import Report from '../models/report.model.js';
+
+/**
+ * Financial CTA Sequence Detector
+ * Analyzes the structural intent of a message.
+ */
+export const detectCtaSequence = (text = "") => {
+    const t = String(text || "").toLowerCase();
+
+    const patterns = {
+        trigger: [
+            /account\s*(issue|problem|locked|suspended|blocked|unauthorized|activity|attempt|at\s*risk)/i,
+            /(unusual|suspicious|unknown)\s*(login|activity|transaction)/i,
+            /verify\s*(identity|account|details|number)/i,
+            /your\s*bank\s*(account|card|access)/i,
+        ],
+        pressure: [
+            /(urgent|immediately|action\s*required|asap|at\s*once|fast)/i,
+            /(within|in\s*next)\s*(\d+|24|48|12|one|two)\s*(hours|hrs|days|mins|minutes)/i,
+            /(expires|deadline|final\s*notice|cutoff|will\s*be\s*closed)/i,
+            /limited\s*time/i,
+        ],
+        action: [
+            /(click|tap|visit|go\s*to|follow|open|use)\s*(the\s*)?(link|url|site|portal|page)/i,
+            /(verify|update|confirm|secure|validate)\s*(at|here|below)/i,
+            /https?:\/\//i,
+            /bit\.ly|tinyurl|t\.co|goo\.gl/i,
+        ],
+    };
+
+    const hits = {
+        trigger: patterns.trigger.some((p) => p.test(t)),
+        pressure: patterns.pressure.some((p) => p.test(t)),
+        action: patterns.action.some((p) => p.test(t)),
+    };
+
+    const hasSequence = hits.trigger && hits.pressure && hits.action;
+    const score = (hits.trigger ? 30 : 0) + (hits.pressure ? 30 : 0) + (hits.action ? 30 : 0);
+
+    return {
+        hasSequence,
+        hits,
+        score: Math.min(score, 100),
+        isHighIntent: hasSequence || score >= 60,
+    };
+};
+
+/**
+ * Adaptive Confidence-Weighted Voting System
+ * Bayesian-like weighting for unified signals.
+ */
+export const calculateWeightedRisk = (signals = {}) => {
+    const weights = {
+        blacklist: 1.0,
+        ml: 0.4,
+        heuristics: 0.6,
+    };
+
+    // Conflict Resolution: Blacklist always overrides
+    if (signals.blacklist?.isHit) {
+        return {
+            finalScore: 100,
+            label: 'smishing',
+            reason: 'Blacklist match (WHOIS/Domain)',
+            confidence: 1.0,
+            badge: 'Smishing',
+            severity: 'high'
+        };
+    }
+
+    const mlSignal = signals.ml || {};
+    const mlScore = mlSignal.label === 'smishing' ? (mlSignal.confidence * 100) :
+                    mlSignal.label === 'spam' ? (mlSignal.confidence * 50) : 0;
+
+    const hSignal = signals.heuristics || {};
+    const ctaSignal = signals.cta || {};
+    
+    // Combine standard heuristics and CTA sequence intent
+    const heuristicScore = Math.max(hSignal.riskScore || 0, ctaSignal.score || 0);
+
+    let totalScore = 0;
+    let totalWeight = 0;
+
+    // ML contribution
+    totalScore += mlScore * weights.ml;
+    totalWeight += weights.ml;
+
+    // Heuristics contribution
+    totalScore += heuristicScore * weights.heuristics;
+    totalWeight += weights.heuristics;
+
+    const finalScore = totalWeight > 0 ? totalScore / totalWeight : 0;
+    
+    let label = 'ham';
+    if (finalScore >= 75) label = 'smishing';
+    else if (finalScore >= 40) label = 'spam';
+
+    const badge = { ham: 'Safe', spam: 'Spam', smishing: 'Smishing' }[label];
+    const severity = { ham: 'low', spam: 'medium', smishing: 'high' }[label];
+
+    return {
+        finalScore: Math.round(finalScore),
+        label,
+        badge,
+        severity,
+        confidence: finalScore / 100,
+        factors: {
+            ml: mlScore,
+            heuristics: heuristicScore,
+            ctaHighIntent: ctaSignal.isHighIntent
+        }
+    };
+};
+
+/**
+ * Time-of-Attack Velocity Analytics
+ * Detects real-time spikes in attack vectors.
+ */
+export const checkAttackVelocity = async (text = "") => {
+    const category = categorizeMessage(text);
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+    try {
+        const stats = await Report.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: oneHourAgo }
+                }
+            },
+            {
+                $project: {
+                    category: {
+                        $cond: {
+                            if: { $regexMatch: { input: "$messageText", regex: /tax|hmrc|irs|revenue/i } }, then: "Tax",
+                            else: {
+                                $cond: {
+                                    if: { $regexMatch: { input: "$messageText", regex: /parcel|delivery|dhl|fedex|ups|post/i } }, then: "Parcel",
+                                    else: {
+                                        $cond: {
+                                            if: { $regexMatch: { input: "$messageText", regex: /bank|card|account|payment/i } }, then: "Financial",
+                                            else: {
+                                                $cond: {
+                                                    if: { $regexMatch: { input: "$messageText", regex: /win|prize|lottery|gift/i } }, then: "Prize",
+                                                    else: "Other"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $match: { category: category }
+            },
+            {
+                $count: "count"
+            }
+        ]);
+
+        const count = stats.length > 0 ? stats[0].count : 0;
+        const threshold = 15; // Velocity threshold
+
+        return {
+            category,
+            count,
+            isVelocityAttack: count >= threshold,
+            warning: count >= threshold ? `🚨 High volume ${category} campaign detected in your region!` : null
+        };
+    } catch (err) {
+        console.error("Velocity Analytics error:", err);
+        return { category, count: 0, isVelocityAttack: false };
+    }
+};
+
+const categorizeMessage = (text) => {
+    const t = text.toLowerCase();
+    if (/tax|hmrc|irs|revenue/i.test(t)) return 'Tax';
+    if (/parcel|delivery|dhl|fedex|ups|post/i.test(t)) return 'Parcel';
+    if (/bank|card|account|payment/i.test(t)) return 'Financial';
+    if (/win|prize|lottery|gift/i.test(t)) return 'Prize';
+    return 'Other';
+};
 
 /**
  * Unified Detection Service
