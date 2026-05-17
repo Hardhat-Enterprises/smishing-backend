@@ -1,3 +1,6 @@
+import Detections from "../models/detections.model.js";
+import { Parser } from "json2csv";
+import { extractUrls, analyzePath, getTLDRisk } from "../utils/entropy.js";
 import { normalizeText } from '../utils/normalization.js';
 import { scrubPii } from './privacy.service.js';
 import Report from '../models/report.model.js';
@@ -342,4 +345,51 @@ export const applyGuardrails = (classification, text = "") => {
     }
 
     return cls;
+};
+
+/**
+ * Analyzes all URLs within a message and returns a consolidated risk report.
+ * 
+ * @param {string} message - The message text to analyze.
+ * @returns {Object} - Risk analysis results.
+ */
+export const analyzeMessageUrls = (message) => {
+    if (!message) return { urlsDetected: 0, maxRisk: 0, analysis: [] };
+    
+    const urls = extractUrls(message);
+    const analysis = urls.map(url => {
+        let hostname = "";
+        try {
+            hostname = new URL(url).hostname;
+        } catch (e) {
+            // Fallback for malformed URLs that might still be interesting
+            hostname = url.split("/")[2] || "";
+        }
+
+        const pathInfo = analyzePath(url);
+        const tldRisk = getTLDRisk(hostname);
+        
+        // Calculate risk score based on lexical features
+        // Higher entropy means more randomness, which is common in DGA/malicious paths
+        let riskScore = 0;
+        riskScore += pathInfo.pathEntropy * 15; // Shannon entropy weight
+        riskScore += pathInfo.depth * 5;        // Path depth weight
+        if (pathInfo.hasSuspiciousExtension) riskScore += 40; // High risk for extensions like .php, .exe
+        riskScore += tldRisk * 3;               // TLD risk weight (e.g., .top, .link)
+        
+        return {
+            url,
+            riskScore: Math.min(100, Math.round(riskScore)),
+            ...pathInfo,
+            tldRisk
+        };
+    });
+
+    const maxRisk = analysis.length > 0 ? Math.max(...analysis.map(a => a.riskScore)) : 0;
+
+    return {
+        urlsDetected: urls.length,
+        maxRisk,
+        analysis
+    };
 };
