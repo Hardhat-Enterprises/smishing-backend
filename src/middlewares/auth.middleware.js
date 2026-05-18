@@ -19,15 +19,22 @@ export const authMiddleware = async (req, res, next) => {
         }
 
         if (req.path == "/reactivate") {
-            req.user = { id: user._id.toString() };
+            // For reactivate, allow deactivated accounts
+            req.user = {
+                id: user._id.toString(),
+                ...decoded, // Include all decoded fields (userId, purpose, etc.)
+            };
             return next();
         }
 
-        if (!user.isActive) {
+        if (!user.isActive && req.path !== "/reactivate") {
             return res.status(403).json({ message: "Account is deactivated" });
         }
 
-        req.user = { id: user._id.toString() };
+        req.user = {
+            id: user._id.toString(),
+            ...decoded, // Include all decoded fields (userId, purpose, etc.)
+        };
         next();
     } catch (error) {
         res.status(401).json({ message: "Token is invalid" });

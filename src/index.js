@@ -24,6 +24,8 @@ import healthRoute from "./routes/health.route.js";
 import userRoute from "./routes/userUpdate.route.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
 import whoisRoutes from "./routes/whois.route.js";
+
+import threatIntelRoute from "./routes/threatIntel.route.js";
 import chatRoute from "./routes/chat.route.js"; //  my first  addition here
 
 // -------------------------------
@@ -32,7 +34,9 @@ import chatRoute from "./routes/chat.route.js"; //  my first  addition here
 import securityMiddleware from "./middlewares/security.middleware.js";
 import { apiLimiter, authLimiter } from "./middlewares/RateLimiter.middleware.js";
 import { errorHandler } from "./middlewares/ErrorHandler.middleware.js";
+
 import { loggerMiddleware } from "./middlewares/logger.middleware.js";
+
 import cors from "cors";
 
 // -------------------------------
@@ -50,7 +54,9 @@ import { classifyMessage, fallbackClassify } from "./services/ml.service.js";
 // -------------------------------
 const app = express();
 
+
 app.use(loggerMiddleware);
+
 app.use(express.json());
 app.use(cors());
 // So req.ip is real when behind nginx/Cloudflare/Render/etc.
@@ -85,6 +91,9 @@ app.use("/api/spam", spamRoute);
 app.use("/health", healthRoute);
 app.use("/api/userUpdate", userRoute);
 app.use("/api/whois", whoisRoutes);
+
+app.use("/api/threat-intel", threatIntelRoute);
+
 app.use("/api/chat", chatRoute); //  my second addition here
 
 /* ====================================================================== */
@@ -295,6 +304,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
 import "dotenv/config";
 import express from "express";
 import connectDB from "./configs/db.config.js";
@@ -540,5 +550,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {  
   console.log(`Server running on port ${PORT}`);  
 });  
+
 
 export default app;

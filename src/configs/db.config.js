@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"; // Import Mongoose
 
 async function connectDB() {
     try {

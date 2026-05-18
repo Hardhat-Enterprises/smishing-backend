@@ -6,6 +6,8 @@ import { sendEmail } from "../services/email.service.js";
 import LoginActivity from "../models/loginActivity.model.js";
 import { getClientIP } from "../utils/ip.js";
 import { isNewIPOrDevice, userAgentLabel } from "../utils/securitySignals.js";
+import { generateTotpSecret, verifyTotpToken, generateTotpQrCode, isValidTotpFormat } from "../utils/totp.util.js";
+import { sanitizeQueryInput } from "../utils/querySanitizer.js";
 import bcrypt from "bcrypt";
 
 const LOCKOUT_THRESHOLD = Number(process.env.LOCKOUT_THRESHOLD || 5);
@@ -18,7 +20,7 @@ export const signup = async (req, res) => {
     try {
         const { fullName, phoneNumber, email, password, pin } = req.body;
 
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne(sanitizeQueryInput({ email }));
         if (existingUser) {
             return res.status(409).json({
                 success: false,
@@ -74,7 +76,7 @@ export const verifyemail = async (req, res) => {
     try {
         const { email, otp } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne(sanitizeQueryInput({ email }));
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
@@ -123,7 +125,7 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne(sanitizeQueryInput({ email }));
         const now1 = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now1) {
             return res.status(429).json({
@@ -230,6 +232,18 @@ export const login = async (req, res) => {
         user.security.lastLoginUA = ua;
         await user.save();
 
+        // --- NEW: Check if 2FA is enabled ---
+        if (user.totpEnabled) {
+            // Generate a temporary 2FA token (expires in 5 minutes)
+            const tempToken = generateToken({ userId: user._id, purpose: "2fa_verify" }, "5m");
+            return res.status(200).json({
+                success: true,
+                message: "Password verified. Please complete 2FA verification.",
+                requires2FA: true,
+                temp2FAToken: tempToken,
+            });
+        }
+
         const token = generateToken({ userId: user._id });
 
         if (user.loginAttempts) {
@@ -303,7 +317,7 @@ export const forgotpassword = async (req, res) => {
     try {
         const { email } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne(sanitizeQueryInput({ email }));
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
@@ -353,7 +367,7 @@ export const resetpassword = async (req, res) => {
     try {
         const { email, newPassword, otp } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne(sanitizeQueryInput({ email }));
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
@@ -457,5 +471,266 @@ export const changePassword = async (req, res) => {
     } catch (err) {
         console.error("changePassword error:", err);
         return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+/**
+ * POST /api/auth/setup-2fa
+ * Auth: Required
+ * Generates a TOTP secret and returns QR code
+ * Client must verify with verifyAndEnableTotp endpoint
+ */
+export const setupTotp = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthenticated" });
+        }
+
+        const user = await User.findById(userId).select("+totpSecret");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // If already enabled, deny setup
+        if (user.totpEnabled) {
+            return res.status(400).json({ success: false, message: "2FA is already enabled for this account." });
+        }
+
+        // Generate a new secret
+        const secretObj = generateTotpSecret();
+
+        // Generate QR code
+        const qrCodeUrl = await generateTotpQrCode(secretObj);
+
+        // Store the secret temporarily (not enabled yet)
+        user.totpSecret = secretObj.secret;
+        user.totpSetupAt = new Date();
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "TOTP setup initiated. Please verify with your authenticator app.",
+            qrCode: qrCodeUrl,
+            secret: secretObj.secret, // Return secret as backup in case QR doesn't work
+        });
+    } catch (error) {
+        console.error("setupTotp error:", error);
+        return res.status(500).json({ success: false, message: "Failed to setup 2FA." });
+    }
+};
+
+/**
+ * POST /api/auth/verify-totp
+ * Auth: Required
+ * Verifies the TOTP token and enables 2FA
+ * Body: { token } - 6-digit code from authenticator
+ */
+export const verifyAndEnableTotp = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthenticated" });
+        }
+
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({ success: false, message: "TOTP token is required." });
+        }
+
+        // Validate token format
+        if (!isValidTotpFormat(token)) {
+            return res.status(400).json({ success: false, message: "Invalid TOTP format. Must be 6 digits." });
+        }
+
+        const user = await User.findById(userId).select("+totpSecret");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // User must have a secret from setupTotp first
+        if (!user.totpSecret) {
+            return res.status(400).json({ success: false, message: "Please initiate 2FA setup first." });
+        }
+
+        // Verify the token against the stored secret
+        const isValid = verifyTotpToken(token, user.totpSecret);
+        if (!isValid) {
+            return res.status(400).json({ success: false, message: "Invalid TOTP token. Please try again." });
+        }
+
+        // Enable TOTP
+        user.totpEnabled = true;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "2FA has been successfully enabled.",
+            totpEnabled: true,
+        });
+    } catch (error) {
+        console.error("verifyAndEnableTotp error:", error);
+        return res.status(500).json({ success: false, message: "Failed to verify TOTP." });
+    }
+};
+
+/**
+ * POST /api/auth/disable-2fa
+ * Auth: Required
+ * Disables 2FA for the user
+ */
+export const disableTotp = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthenticated" });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        if (!user.totpEnabled) {
+            return res.status(400).json({ success: false, message: "2FA is not currently enabled." });
+        }
+
+        // Disable TOTP and clear secrets
+        user.totpEnabled = false;
+        user.totpSecret = null;
+        user.totpSetupAt = null;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "2FA has been successfully disabled.",
+            totpEnabled: false,
+        });
+    } catch (error) {
+        console.error("disableTotp error:", error);
+        return res.status(500).json({ success: false, message: "Failed to disable 2FA." });
+    }
+};
+
+/**
+ * POST /api/auth/verify-login-totp
+ * Verifies TOTP during login and issues the main JWT token
+ * Body: { token } - 6-digit TOTP code
+ * Headers: Authorization: Bearer <temp2FAToken>
+ */
+export const verifyLoginTotp = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const purpose = req.user?.purpose;
+
+        // Must use the temporary 2FA verification token
+        if (!userId || purpose !== "2fa_verify") {
+            return res.status(401).json({ success: false, message: "Invalid or expired 2FA token." });
+        }
+
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({ success: false, message: "TOTP token is required." });
+        }
+
+        if (!isValidTotpFormat(token)) {
+            return res.status(400).json({ success: false, message: "Invalid TOTP format. Must be 6 digits." });
+        }
+
+        const user = await User.findById(userId).select("+totpSecret");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        if (!user.totpEnabled || !user.totpSecret) {
+            return res.status(400).json({ success: false, message: "2FA is not configured for this account." });
+        }
+
+        // Verify the TOTP token
+        const isValid = verifyTotpToken(token, user.totpSecret);
+        if (!isValid) {
+            return res.status(401).json({ success: false, message: "Invalid TOTP code. Please try again." });
+        }
+
+        // TOTP verified! Issue the main JWT token
+        const mainToken = generateToken({ userId: user._id });
+
+        return res.status(200).json({
+            success: true,
+            message: "2FA verification successful. Login complete.",
+            token: mainToken,
+        });
+    } catch (error) {
+        console.error("verifyLoginTotp error:", error);
+        return res.status(500).json({ success: false, message: "Failed to verify 2FA." });
+    }
+};
+
+/**
+ * POST /api/auth/verify-login-backup-code
+ * Verifies backup code during login and issues the main JWT token
+ * Body: { code } - backup code
+ * Headers: Authorization: Bearer <temp2FAToken>
+ */
+export const verifyLoginBackupCode = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const purpose = req.user?.purpose;
+
+        // Must use the temporary 2FA verification token
+        if (!userId || purpose !== "2fa_verify") {
+            return res.status(401).json({ success: false, message: "Invalid or expired 2FA token." });
+        }
+
+        const { code } = req.body;
+        if (!code) {
+            return res.status(400).json({ success: false, message: "Backup code is required." });
+        }
+
+        const user = await User.findById(userId).select("+backupCodes");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        if (!user.backupCodes || user.backupCodes.length === 0) {
+            return res.status(400).json({ success: false, message: "No backup codes available." });
+        }
+
+        // Normalize and find matching unused backup code
+        const normalize = (s) => String(s).replace(/[\s-]/g, "").trim();
+        const raw = normalize(code);
+
+        let matchedIndex = -1;
+        for (let i = 0; i < user.backupCodes.length; i++) {
+            const entry = user.backupCodes[i];
+            if (entry.used) continue;
+            const ok = await bcrypt.compare(raw, entry.code);
+            if (ok) {
+                matchedIndex = i;
+                break;
+            }
+        }
+
+        if (matchedIndex === -1) {
+            return res.status(401).json({ success: false, message: "Invalid or already used backup code." });
+        }
+
+        // Mark the backup code as used
+        user.backupCodes[matchedIndex].used = true;
+        user.backupCodes[matchedIndex].usedAt = new Date();
+        await user.save();
+
+        // Backup code verified! Issue the main JWT token
+        const mainToken = generateToken({ userId: user._id });
+
+        return res.status(200).json({
+            success: true,
+            message: "Backup code verified. Login complete.",
+            token: mainToken,
+            codesRemaining: user.backupCodes.filter((c) => !c.used).length,
+        });
+    } catch (error) {
+        console.error("verifyLoginBackupCode error:", error);
+        return res.status(500).json({ success: false, message: "Failed to verify backup code." });
     }
 };
