@@ -7,6 +7,7 @@ import "dotenv/config";
 //  Core server
 // -------------------------------
 import express from "express";
+import cors from "cors";
 
 // -------------------------------
 //  DB (Mongoose -> MongoDB Atlas)
@@ -24,7 +25,8 @@ import healthRoute from "./routes/health.route.js";
 import userRoute from "./routes/userUpdate.route.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
 import whoisRoutes from "./routes/whois.route.js";
-import chatRoute from "./routes/chat.route.js"; //  my first  addition here
+import chatRoute from "./routes/chat.route.js";
+import reportRoute from "./routes/report.route.js";
 
 // -------------------------------
 //  Middlewares
@@ -53,7 +55,6 @@ const app = express();
 app.use(loggerMiddleware);
 app.use(express.json());
 app.use(cors());
-// So req.ip is real when behind nginx/Cloudflare/Render/etc.
 app.set("trust proxy", true);
 
 /* ====================================================================== */
@@ -72,7 +73,9 @@ app.use(express.urlencoded({ extended: true }));
 // Apply error handler
 app.use(errorHandler);
 
-// Connect to MongoDB
+/* ====================================================================== */
+/* 2) DATABASE CONNECTION                                                 */
+/* ====================================================================== */
 connectDB();
 
 /* ====================================================================== */
@@ -85,6 +88,8 @@ app.use("/api/spam", spamRoute);
 app.use("/health", healthRoute);
 app.use("/api/userUpdate", userRoute);
 app.use("/api/whois", whoisRoutes);
+app.use("/api/chat", chatRoute);
+app.use("/api", reportRoute);
 app.use("/api/chat", chatRoute); //  my second addition here
 
 /* ====================================================================== */
@@ -93,6 +98,14 @@ app.use("/api/chat", chatRoute); //  my second addition here
 app.post("/test", (req, res) => {
     console.log("📩 Received at /test:", req.body);
     res.json({ status: "ok", received: req.body });
+});
+
+/* ====================================================================== */
+/* 5) SERVER BOOT                                                         */
+/* ====================================================================== */
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
 
 /* ====================================================================== */
