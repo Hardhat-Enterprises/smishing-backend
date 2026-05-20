@@ -39,7 +39,7 @@ const ReportSchema = new mongoose.Schema(
             default: undefined,
         },
 
-        // NEW REVIEW FIELDS
+        // REVIEW FIELDS
         status: {
             type: String,
             enum: ["new", "under_review", "reviewed"],
