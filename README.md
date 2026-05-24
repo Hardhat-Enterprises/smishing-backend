@@ -27,8 +27,15 @@ smishing-backend/
 │   ├── utils/          # Utility/helper functions (e.g., JWT generation, password hashing, etc.)
 │   └── index.js        # Entry point, Express app setup, registering routes/middleware
 │
-├── tests/          # Unit/integration tests (Jest/Mocha, etc.)
-│
+├── tests/                  # Automated integration tests
+│   ├── mocks/              # Mocked external services used during testing
+│   ├── auth.test.js        # Authentication endpoint tests
+│   ├── contact.test.js     # Contact route validation tests
+│   ├── feedback.test.js    # Feedback route validation tests
+│   ├── health.test.js      # Health route tests
+│   ├── reports.test.js     # Reports route validation tests
+│   └── scan.test.js        # Scan route integration and edge case tests
+|
 ├── .env            # Environment variables (DB URI, secrets) - NOT committed
 ├── .env.example    # Example .env
 ├── .gitattributes
@@ -91,6 +98,16 @@ npm run dev
 
 This launches the backend with `nodemon` on `http://localhost:3000`.
 
+### 5. Running Tests
+
+The backend uses Jest and Supertest for automated integration testing.
+
+Run all tests:
+
+```bash
+npm test
+```
+
 ## 📜 Scripts
 
 | Command          | Description                   |
@@ -102,4 +119,7 @@ This launches the backend with `nodemon` on `http://localhost:3000`.
 ## 🤝 Contribution Guidelines
 
 Please refer to the [contributing guide](CONTRIBUTING.md) for more details
-"" 
+
+```
+
+```
