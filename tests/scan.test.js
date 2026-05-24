@@ -73,23 +73,29 @@ describe("POST /api/scan", () => {
 
     // Test 5: ML service failure
     // To ensure backend handles external service errors safely
-    it("should return 500 if the ML service fails", async () => {
+    it("should use fallback classification if ML service fails", async () => {
         mockPost.mockRejectedValue(new Error("ML service unavailable"));
 
-        const res = await request(app).post("/api/scan").send({ message: "Click this urgent link now" });
+        const res = await request(app).post("/api/scan").send({
+            message: "Click this urgent link now",
+        });
 
-        expect(res.statusCode).toBe(500);
-        expect(res.body).toHaveProperty("detail", "Failed to get prediction from ML microservice");
+        expect(res.statusCode).toBe(200);
+
+        expect(res.body).toHaveProperty("prediction");
     });
 
     // Test 6: ML timeout simulation
-    it("should return 500 if the ML service times out", async () => {
+    it("should use fallback classification if ML service times out", async () => {
         mockPost.mockRejectedValue(new Error("timeout"));
 
-        const res = await request(app).post("/api/scan").send({ message: "Please verify your account immediately" });
+        const res = await request(app).post("/api/scan").send({
+            message: "Please verify your account immediately",
+        });
 
-        expect(res.statusCode).toBe(500);
-        expect(res.body).toHaveProperty("detail", "Failed to get prediction from ML microservice");
+        expect(res.statusCode).toBe(200);
+
+        expect(res.body).toHaveProperty("prediction");
     });
 
     // Test 7: Invalid ML response
@@ -100,7 +106,7 @@ describe("POST /api/scan", () => {
 
         const res = await request(app).post("/api/scan").send({ message: "Click this link now" });
 
-        expect(res.statusCode).toBe(500);
-        expect(res.body).toHaveProperty("detail", "Failed to get prediction from ML microservice");
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty("prediction");
     });
 });
