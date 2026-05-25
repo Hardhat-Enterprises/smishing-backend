@@ -1,6 +1,8 @@
 import express from "express";
 
 import { signup, verifyemail, login, forgotpassword, resetpassword } from "../controllers/auth.controller.js";
+import { sanitizeInput } from "../middlewares/sanitizeInput.js";
+import { loginLimiter } from "../middlewares/rateLimiter.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { changePassword } from "../controllers/auth.controller.js";
 
@@ -29,7 +31,7 @@ router.post("/signup", validate(signupSchema), signup);
 router.post("/verify-email", validate(verifyEmailSchema), verifyemail);
 
 // POST /login
-router.post("/login", validate(loginSchema), login);
+router.post("/login", loginLimiter, sanitizeInput, validate(loginSchema), login);
 
 // POST /forgot-pin
 router.post("/login-pin", loginWithPin);
