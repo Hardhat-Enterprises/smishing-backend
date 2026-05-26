@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+/*import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
@@ -25,6 +25,39 @@ transporter
 export async function sendEmail(to, text) {
     return transporter.sendMail({
         from: process.env.EMAIL_USER,
+        to,
+        subject: "Your OTP",
+        text,
+    });
+}*/
+
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+});
+
+console.log("SMTP ENV", {
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    user_end: (process.env.SMTP_USER || "").slice(-4),
+    pass_len: (process.env.SMTP_PASS || "").length,
+});
+
+transporter
+    .verify()
+    .then(() => console.log("SMTP ready"))
+    .catch((err) => console.error("SMTP error:", err.message));
+
+export async function sendEmail(to, text) {
+    return transporter.sendMail({
+        from: process.env.ALERT_FROM || process.env.SMTP_USER,
         to,
         subject: "Your OTP",
         text,

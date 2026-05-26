@@ -1,7 +1,14 @@
 // src/controllers/auth.controller.js
 import User from "../models/user.model.js";
 import { generateOtp, verifyOtp } from "../utils/otp.util.js";
-import { hashPassword, comparePassword, generateToken } from "../utils/token.util.js";
+//import { hashPassword, comparePassword, generateToken } from "../utils/token.util.js";
+import {
+    hashPassword,
+    comparePassword,
+    generateAccessToken,
+    generateRefreshToken,
+    verifyRefreshToken,
+} from "../utils/token.util.js";
 import { sendEmail } from "../services/email.service.js";
 import LoginActivity from "../models/loginActivity.model.js";
 import { getClientIP } from "../utils/ip.js";
@@ -75,17 +82,17 @@ export const verifyemail = async (req, res) => {
         const { email, otp } = req.body;
 
         const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+        }
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
                 success: false,
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
-            });
-        }
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found.",
             });
         }
 
@@ -124,17 +131,17 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email.",
+            });
+        }
         const now1 = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now1) {
             return res.status(429).json({
                 success: false,
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
-            });
-        }
-        if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid email.",
             });
         }
 
@@ -230,7 +237,10 @@ export const login = async (req, res) => {
         user.security.lastLoginUA = ua;
         await user.save();
 
-        const token = generateToken({ userId: user._id });
+        //const token = generateToken({ userId: user._id });
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
+        //const token = generateToken({ userId: user._id, tokenVersion: user.tokenVersion || 0 });
 
         if (user.loginAttempts) {
             user.loginAttempts.count = 0;
@@ -240,8 +250,14 @@ export const login = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Login successful.",
-            token,
+            accessToken,
+            refreshToken,
         });
+        // return res.status(200).json({
+        //     success: true,
+        //    message: "Login successful.",
+        //    token,
+        // });
     } catch (error) {
         console.error("login error", error);
         return res.status(500).json({
@@ -263,6 +279,8 @@ export const loginWithPin = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
+        if (!user) return res.status(401).json({ success: false, message: "Invalid email." });
+
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
@@ -270,7 +288,6 @@ export const loginWithPin = async (req, res) => {
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
             });
         }
-        if (!user) return res.status(401).json({ success: false, message: "Invalid email." });
 
         if (!user.isEmailVerified) {
             return res.status(403).json({ success: false, message: "Please verify your email before logging in." });
@@ -283,13 +300,17 @@ export const loginWithPin = async (req, res) => {
         const ok = await comparePassword(String(pin), user.pinHash);
         if (!ok) return res.status(401).json({ success: false, message: "Invalid PIN." });
 
-        const token = generateToken({ userId: user._id });
+        // const token = generateToken({ userId: user._id });
+        //const token = generateToken({ userId: user._id, tokenVersion: user.tokenVersion || 0 });
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
         if (user.loginAttempts) {
             user.loginAttempts.count = 0;
             user.loginAttempts.lockUntil = null;
             await user.save();
         }
-        return res.status(200).json({ success: true, message: "Login successful.", token });
+        // return res.status(200).json({ success: true, message: "Login successful.", token });
+        return res.status(200).json({ success: true, message: "Login successful.", accessToken, refreshToken });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ success: false, message: "Internal server error." });
@@ -304,17 +325,17 @@ export const forgotpassword = async (req, res) => {
         const { email } = req.body;
 
         const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
                 success: false,
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
-            });
-        }
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
             });
         }
 
@@ -354,17 +375,17 @@ export const resetpassword = async (req, res) => {
         const { email, newPassword, otp } = req.body;
 
         const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
         const now = new Date();
         if (user.loginAttempts && user.loginAttempts.lockUntil && user.loginAttempts.lockUntil > now) {
             return res.status(429).json({
                 success: false,
                 message: `Account locked. Try again after ${user.loginAttempts.lockUntil.toLocaleString()}.`,
-            });
-        }
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
             });
         }
 
@@ -381,6 +402,8 @@ export const resetpassword = async (req, res) => {
 
         const passwordHash = await hashPassword(newPassword);
         user.passwordHash = passwordHash;
+        user.tokenVersion = (user.tokenVersion || 0) + 1;
+        user.passwordUpdatedAt = new Date();
         await user.save();
 
         if (user.loginAttempts) {
@@ -458,4 +481,89 @@ export const changePassword = async (req, res) => {
         console.error("changePassword error:", err);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
+};
+
+export const refreshToken = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Refresh token is required",
+            });
+        }
+
+        const decoded = verifyRefreshToken(refreshToken);
+
+        const user = await User.findById(decoded.userId).select("+tokenVersion");
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        if (decoded.tokenVersion !== user.tokenVersion) {
+            return res.status(401).json({
+                success: false,
+                message: "Refresh token expired. Please login again.",
+            });
+        }
+
+        const newAccessToken = generateAccessToken(user);
+
+        return res.status(200).json({
+            success: true,
+            accessToken: newAccessToken,
+        });
+    } catch (error) {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid or expired refresh token",
+        });
+    }
+};
+
+export const logoutAllDevices = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthenticated",
+            });
+        }
+
+        const user = await User.findById(userId).select("+tokenVersion");
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        user.tokenVersion = (user.tokenVersion || 0) + 1;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Logged out from all devices successfully.",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
+
+export const logout = async (req, res) => {
+    return res.status(200).json({
+        success: true,
+        message: "Logged out successfully. Please remove token from client side.",
+    });
 };
